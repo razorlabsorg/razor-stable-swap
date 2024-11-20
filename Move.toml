@@ -1,0 +1,17 @@
+[package]
+name = "razor-stable-swap"
+version = "1.0.0"
+authors = []
+
+[addresses]
+razor_stable_swap = "_"
+admin = "380cc51342dc20d61af1a05abbd3a4ba718e555ef8c01f1337698180d5ecff31"
+fee_admin = "5dc6ad760510b85c4187bf124c0b6ffffefd48d39b4889ff1ffb507d285acdee"
+
+[dev-addresses]
+
+[dependencies]
+AptosFramework = {git = 'https://github.com/aptos-labs/aptos-core.git',rev='main',subdir = 'aptos-move/framework/aptos-framework'}
+AptosStdlib = {git = 'https://github.com/aptos-labs/aptos-core.git',rev='main',subdir = 'aptos-move/framework/aptos-stdlib'}
+
+[dev-dependencies]
