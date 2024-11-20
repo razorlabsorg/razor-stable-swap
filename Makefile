@@ -35,7 +35,7 @@ test:
 publish:
 	aptos move deploy-object \
 	--skip-fetch-latest-git-deps \
-	--included-artifacts $(ARTIFACTS_LEVEL) \
+	--included-artifacts none \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)" \
 	--address-name razor_stable_swap
 
