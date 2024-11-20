@@ -18,7 +18,7 @@ module razor_stable_swap::two_pool {
     friend razor_stable_swap::factory;
     friend razor_stable_swap::two_pool_info;
     friend razor_stable_swap::two_pool_deployer;
-    friend razor_stable_swap::stable_swap_router;
+    friend razor_stable_swap::router;
 
     // Constants
     const N_COINS: u64 = 2;

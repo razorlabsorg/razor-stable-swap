@@ -1,4 +1,4 @@
-module razor_stable_swap::stable_swap_library {
+module razor_stable_swap::swap_library {
   use std::vector;
 
   use aptos_framework::object::{Self, Object};

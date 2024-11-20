@@ -1,4 +1,4 @@
-module razor_stable_swap::stable_swap_router {
+module razor_stable_swap::router {
 
     use std::vector;
     use std::signer;
@@ -9,7 +9,7 @@ module razor_stable_swap::stable_swap_router {
 
     use razor_stable_swap::three_pool::{Self, ThreePool};
     use razor_stable_swap::two_pool::{Self, TwoPool};
-    use razor_stable_swap::stable_swap_library;
+    use razor_stable_swap::swap_library;
     use razor_stable_swap::router_helper;
 
     const TWO: u64 = 2;
@@ -57,7 +57,7 @@ module razor_stable_swap::stable_swap_router {
 
         let lp_tokens = three_pool::add_liquidity(pool, token_vector, min_mint_amount, sender);
 
-        let coin_store = stable_swap_library::ensure_account_token_store(sender_addr, pool);
+        let coin_store = swap_library::ensure_account_token_store(sender_addr, pool);
 
         dispatchable_fungible_asset::deposit(coin_store, lp_tokens);
     }
@@ -83,7 +83,7 @@ module razor_stable_swap::stable_swap_router {
 
         let lp_tokens = two_pool::add_liquidity(pool, token_vector, min_mint_amount, sender);
 
-        let coin_store = stable_swap_library::ensure_account_token_store(sender_addr, pool);
+        let coin_store = swap_library::ensure_account_token_store(sender_addr, pool);
 
         dispatchable_fungible_asset::deposit(coin_store, lp_tokens);
     }

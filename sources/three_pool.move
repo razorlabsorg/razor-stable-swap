@@ -15,12 +15,12 @@ module razor_stable_swap::three_pool {
     use aptos_std::comparator;
 
     use razor_stable_swap::controller;
-    use razor_stable_swap::stable_swap_library;
+    use razor_stable_swap::swap_library;
 
     friend razor_stable_swap::factory;
     friend razor_stable_swap::three_pool_info;
     friend razor_stable_swap::three_pool_deployer;
-    friend razor_stable_swap::stable_swap_router;
+    friend razor_stable_swap::router;
 
     // Constants
     const N_COINS: u64 = 3;
@@ -227,7 +227,7 @@ module razor_stable_swap::three_pool {
         let token2 = *vector::borrow(&coins, 2);
 
         if (!is_sorted(token0, token1, token2)) {
-            return initialize(stable_swap_library::sort_tokens_three(token0, token1, token2), a, fee, admin_fee)
+            return initialize(swap_library::sort_tokens_three(token0, token1, token2), a, fee, admin_fee)
         };
         // Validate inputs
         assert!(a > 0 && a <= MAX_A, ERROR_INVALID_A);
@@ -479,7 +479,7 @@ module razor_stable_swap::three_pool {
 
         // TODO: THOROUGHLY SCRUTINIZE THIS
         if (!is_sorted(token0, token1, token2)) {
-            let tokenPositions = stable_swap_library::sort_tokens_position(token0, token1, token2);
+            let tokenPositions = swap_library::sort_tokens_position(token0, token1, token2);
             let sortedAmounts = vector::empty<FungibleAsset>();
             
             // Use the positions to create the sorted vector
@@ -1411,7 +1411,7 @@ module razor_stable_swap::three_pool {
         token2: Object<Metadata>
     ): address {
         if (!is_sorted(token0, token1, token2)) {
-            let tokenVector = stable_swap_library::sort_tokens_three(token0, token1, token2);
+            let tokenVector = swap_library::sort_tokens_three(token0, token1, token2);
             return pool_address(*vector::borrow(&tokenVector, 0), *vector::borrow(&tokenVector, 1), *vector::borrow(&tokenVector, 2))
         };
         object::create_object_address(&@razor_stable_swap, get_pool_seeds(token0, token1, token2))
