@@ -1,4 +1,4 @@
-module razor_stable_swap::stable_swap_factory {
+module razor_stable_swap::factory {
   use aptos_std::comparator;
   use aptos_std::simple_map::{Self, SimpleMap};
 
@@ -325,7 +325,7 @@ module razor_stable_swap::stable_swap_factory {
   }
 
   #[test_only]
-  public fun init_for_testing() {
+  public fun initialize_for_testing(deployer: &signer) {
     initialize();
   }
 }

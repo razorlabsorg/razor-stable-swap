@@ -1,5 +1,5 @@
 module razor_stable_swap::router_helper {
-  use razor_stable_swap::stable_swap_factory;
+  use razor_stable_swap::factory;
   use razor_stable_swap::stable_swap_info;
 
   use std::vector;
@@ -18,14 +18,14 @@ module razor_stable_swap::router_helper {
     let j;
     let swap_contract;
     if (flag == 2) {
-      let info = stable_swap_factory::get_pair_info(input, output);
-      let (swap, token0, _, _) = stable_swap_factory::deconstruct_pair_info(info);
+      let info = factory::get_pair_info(input, output);
+      let (swap, token0, _, _) = factory::deconstruct_pair_info(info);
       i = if (input == token0) { 0 } else { 1 };
       j = if (i == 0) { 1 } else { 0 };
       swap_contract = swap;
     } else {
-      let info = stable_swap_factory::get_three_pool_pair_info(input, output);
-      let (swap, token0, token1, _, _) = stable_swap_factory::deconstruct_three_pool_pair_info(info);
+      let info = factory::get_three_pool_pair_info(input, output);
+      let (swap, token0, token1, _, _) = factory::deconstruct_three_pool_pair_info(info);
       if (input == token0) {
         i = 0;
       } else if (input == token1) {

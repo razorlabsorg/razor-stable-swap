@@ -8,7 +8,7 @@ module razor_stable_swap::two_pool_deployer {
   use razor_stable_swap::stable_swap_errors;
   use razor_stable_swap::two_pool::{Self, TwoPool};
 
-  friend razor_stable_swap::stable_swap_factory;
+  friend razor_stable_swap::factory;
 
   const N_COINS: u64 = 2;
 

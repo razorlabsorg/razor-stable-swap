@@ -18,7 +18,7 @@ module razor_stable_swap::three_pool {
     use razor_stable_swap::stable_swap_library;
     use razor_stable_swap::swap_errors;
 
-    friend razor_stable_swap::stable_swap_factory;
+    friend razor_stable_swap::factory;
     friend razor_stable_swap::three_pool_info;
     friend razor_stable_swap::three_pool_deployer;
     friend razor_stable_swap::stable_swap_router;

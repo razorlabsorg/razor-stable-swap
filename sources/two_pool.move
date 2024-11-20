@@ -16,7 +16,7 @@ module razor_stable_swap::two_pool {
     use razor_stable_swap::controller;
     use razor_stable_swap::swap_errors;
 
-    friend razor_stable_swap::stable_swap_factory;
+    friend razor_stable_swap::factory;
     friend razor_stable_swap::two_pool_info;
     friend razor_stable_swap::two_pool_deployer;
     friend razor_stable_swap::stable_swap_router;

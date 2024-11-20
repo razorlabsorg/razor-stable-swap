@@ -8,7 +8,7 @@ module razor_stable_swap::three_pool_deployer {
   use razor_stable_swap::stable_swap_errors;
   use razor_stable_swap::three_pool::{Self, ThreePool};
 
-  friend razor_stable_swap::stable_swap_factory;
+  friend razor_stable_swap::factory;
 
   const N_COINS: u64 = 3;
 

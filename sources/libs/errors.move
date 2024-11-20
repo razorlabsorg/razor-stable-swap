@@ -8,7 +8,7 @@ module razor_stable_swap::stable_swap_errors {
   friend razor_stable_swap::two_pool_deployer;
   friend razor_stable_swap::three_pool;
   friend razor_stable_swap::three_pool_deployer;
-  friend razor_stable_swap::stable_swap_factory;
+  friend razor_stable_swap::factory;
   friend razor_stable_swap::stable_swap_router;
 
   /// Pool Reserves is Zero
