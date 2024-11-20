@@ -5,12 +5,14 @@ module razor_stable_swap::three_pool_deployer {
   use aptos_framework::object::{Self, Object};
   use aptos_framework::fungible_asset::Metadata;
 
-  use razor_stable_swap::stable_swap_errors;
   use razor_stable_swap::three_pool::{Self, ThreePool};
 
   friend razor_stable_swap::factory;
 
   const N_COINS: u64 = 3;
+
+  /// Identical Addresses
+  const ERROR_IDENTICAL_ADDRESSES: u64 = 1;
 
   fun is_sorted(token0: Object<Metadata>, token1: Object<Metadata>): bool {
     let token0_addr = object::object_address(&token0);
@@ -26,9 +28,9 @@ module razor_stable_swap::three_pool_deployer {
     let tokenA_addr = object::object_address(&tokenA);
     let tokenB_addr = object::object_address(&tokenB);
     let tokenC_addr = object::object_address(&tokenC);
-    assert!(tokenA_addr != tokenB_addr, stable_swap_errors::identical_addresses());
-    assert!(tokenA_addr != tokenC_addr, stable_swap_errors::identical_addresses());
-    assert!(tokenB_addr != tokenC_addr, stable_swap_errors::identical_addresses());
+    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
+    assert!(tokenA_addr != tokenC_addr, ERROR_IDENTICAL_ADDRESSES);
+    assert!(tokenB_addr != tokenC_addr, ERROR_IDENTICAL_ADDRESSES);
     let (token0, token1, token2);
     if (is_sorted(tokenA, tokenB)) {
       if (is_sorted(tokenB, tokenC)) {

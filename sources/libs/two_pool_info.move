@@ -6,12 +6,23 @@ module razor_stable_swap::two_pool_info {
     use aptos_framework::fungible_asset::{Self, Metadata};
 
     use razor_stable_swap::two_pool::{Self, TwoPool};
-    use razor_stable_swap::swap_errors;
 
     // Constants
     const N_COINS: u64 = 2;
     const FEE_DENOMINATOR: u256 = 10000000000; // 1e10
     const PRECISION: u256 = 1000000000000000000; // 1e18
+
+    // Errors
+    /// Invalid coin index
+    const ERROR_INVALID_COIN_INDEX: u64 = 1;
+    /// Fewer coins in exchange
+    const ERROR_FEWER_COINS_IN_EXCHANGE: u64 = 2;
+    /// Excess balance
+    const ERROR_EXCESS_BALANCE: u64 = 3;
+    /// D1 must be greater than D0
+    const ERROR_D1_MUST_BE_GREATER_THAN_D0: u64 = 4;
+    /// Initial deposit requires all coins
+    const ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS: u64 = 5;
 
     #[view]
     public fun token(pool: Object<TwoPool>): address {
@@ -197,7 +208,7 @@ module razor_stable_swap::two_pool_info {
         let i = 0;
         while (i < N_COINS) {
             if (token_supply == 0) {
-                assert!(*vector::borrow(&amounts, i) > 0, swap_errors::initial_deposit_requires_all_coins()); // Initial deposit requires all coins
+                assert!(*vector::borrow(&amounts, i) > 0, ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS); // Initial deposit requires all coins
             };
             let new_balance = *vector::borrow(&old_balances, i) + *vector::borrow(&amounts, i);
             *vector::borrow_mut(&mut new_balances, i) = new_balance;
@@ -205,7 +216,7 @@ module razor_stable_swap::two_pool_info {
         };
 
         let d1 = get_d_mem(pool, new_balances, amp);
-        assert!(d1 > d0, swap_errors::d1_must_be_greater_than_d0()); // D1 must be greater than D0
+        assert!(d1 > d0, ERROR_D1_MUST_BE_GREATER_THAN_D0); // D1 must be greater than D0
 
         let liquidity_fee = vector::empty<u256>();
         if (token_supply > 0) {
@@ -275,7 +286,7 @@ module razor_stable_swap::two_pool_info {
         j: u64,
         dx: u256
     ): (u256, u256) {
-        assert!(i < N_COINS && j < N_COINS && i != j, swap_errors::invalid_coin_index());
+        assert!(i < N_COINS && j < N_COINS && i != j, ERROR_INVALID_COIN_INDEX);
 
         let pool_fee = two_pool::pool_fee(&pool);
         let admin_fee = two_pool::pool_admin_fee(&pool);
@@ -306,7 +317,7 @@ module razor_stable_swap::two_pool_info {
         xp: &vector<u256>,
         amp: u256
     ): u256 {
-        assert!(i != j && i < N_COINS && j < N_COINS, swap_errors::invalid_coin_index());
+        assert!(i != j && i < N_COINS && j < N_COINS, ERROR_INVALID_COIN_INDEX);
         let amp_n = amp * (N_COINS as u256);
         let d = two_pool::get_d(xp, amp);
         let c = d;
@@ -356,7 +367,7 @@ module razor_stable_swap::two_pool_info {
         token_amount: u256,
         i: u64
     ): u256 {
-        assert!(i < N_COINS, swap_errors::invalid_coin_index());
+        assert!(i < N_COINS, ERROR_INVALID_COIN_INDEX);
 
         let admin_fee = two_pool::pool_admin_fee(&pool);
         let (_, dy_fee) = two_pool::calc_withdraw_one_coin(&pool, token_amount, i);
@@ -371,7 +382,7 @@ module razor_stable_swap::two_pool_info {
         dy: u256,
         max_dx: u256
     ): u256 {
-        assert!(i < N_COINS && j < N_COINS && i != j, swap_errors::invalid_coin_index());
+        assert!(i < N_COINS && j < N_COINS && i != j, ERROR_INVALID_COIN_INDEX);
 
         let pool_fee = two_pool::pool_fee(&pool);
         let old_balances = balances(pool);
@@ -380,7 +391,7 @@ module razor_stable_swap::two_pool_info {
         let amp = two_pool::a(pool);
 
         let dy_with_fee = (dy * FEE_DENOMINATOR) / (FEE_DENOMINATOR - pool_fee);
-        assert!(dy_with_fee < *vector::borrow(&old_balances, j), swap_errors::excess_balance());
+        assert!(dy_with_fee < *vector::borrow(&old_balances, j), ERROR_EXCESS_BALANCE);
 
         let y = *vector::borrow(&xp, j) - (dy_with_fee * *vector::borrow(&rates, j)) / PRECISION;
         let x = get_y(j, i, y, &xp, amp);
@@ -389,7 +400,7 @@ module razor_stable_swap::two_pool_info {
 
         // Convert to real units
         let dx = (dx * PRECISION) / *vector::borrow(&rates, i) + 1; // +1 for round loss
-        assert!(dx <= max_dx, swap_errors::fewer_coins_in_exchange());
+        assert!(dx <= max_dx, ERROR_FEWER_COINS_IN_EXCHANGE);
 
         dx
     }

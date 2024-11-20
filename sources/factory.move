@@ -11,7 +11,9 @@ module razor_stable_swap::factory {
   use razor_stable_swap::three_pool::{Self, ThreePool};
   use razor_stable_swap::two_pool_deployer;
   use razor_stable_swap::three_pool_deployer;
-  use razor_stable_swap::stable_swap_errors;
+
+  /// Identical Addresses
+  const ERROR_IDENTICAL_ADDRESSES: u64 = 1;
 
   struct StableSwapPairInfo has copy, drop, store {
     swap_contract: address,
@@ -75,7 +77,7 @@ module razor_stable_swap::factory {
   ): (Object<Metadata>, Object<Metadata>) {
     let tokenA_addr = object::object_address(&tokenA);
     let tokenB_addr = object::object_address(&tokenB);
-    assert!(tokenA_addr != tokenB_addr, stable_swap_errors::identical_addresses());
+    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
     let (token0, token1);
     if (is_sorted(tokenA, tokenB)) {
       (token0, token1) = (tokenA, tokenB)
@@ -94,9 +96,9 @@ module razor_stable_swap::factory {
     let tokenA_addr = object::object_address(&tokenA);
     let tokenB_addr = object::object_address(&tokenB);
     let tokenC_addr = object::object_address(&tokenC);
-    assert!(tokenA_addr != tokenB_addr, stable_swap_errors::identical_addresses());
-    assert!(tokenA_addr != tokenC_addr, stable_swap_errors::identical_addresses());
-    assert!(tokenB_addr != tokenC_addr, stable_swap_errors::identical_addresses());
+    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
+    assert!(tokenA_addr != tokenC_addr, ERROR_IDENTICAL_ADDRESSES);
+    assert!(tokenB_addr != tokenC_addr, ERROR_IDENTICAL_ADDRESSES);
     let (token0, token1, token2);
     if (is_sorted(tokenA, tokenB)) {
       if (is_sorted(tokenB, tokenC)) {

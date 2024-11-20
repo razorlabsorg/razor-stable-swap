@@ -7,8 +7,6 @@ module razor_stable_swap::stable_swap_router {
     use aptos_framework::primary_fungible_store;
     use aptos_framework::dispatchable_fungible_asset;
 
-
-    use razor_stable_swap::stable_swap_errors;
     use razor_stable_swap::three_pool::{Self, ThreePool};
     use razor_stable_swap::two_pool::{Self, TwoPool};
     use razor_stable_swap::stable_swap_library;
@@ -16,6 +14,11 @@ module razor_stable_swap::stable_swap_router {
 
     const TWO: u64 = 2;
     const THREE: u64 = 3;
+
+    /// Invalid input lengths
+    const ERROR_INVALID_VECTOR_LENGTH: u64 = 1;
+    /// Excessive input amount
+    const ERROR_EXCESSIVE_INPUT_AMOUNT: u64 = 2;
 
     fun num_coins(swap: address): u64 {
         if (object::object_exists<TwoPool>(swap)) {
@@ -40,7 +43,7 @@ module razor_stable_swap::stable_swap_router {
     ) {
         let sender_addr = signer::address_of(sender);
 
-        assert!(vector::length(&amounts) == THREE, stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&amounts) == THREE, ERROR_INVALID_VECTOR_LENGTH);
         let (token0, token1, token2) = three_pool::unpack_pool(pool);
 
         let asset0 = primary_fungible_store::withdraw(sender, token0, *vector::borrow(&amounts, 0));
@@ -67,7 +70,7 @@ module razor_stable_swap::stable_swap_router {
     ) {
         let sender_addr = signer::address_of(sender);
 
-        assert!(vector::length(&amounts) == TWO, stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&amounts) == TWO, ERROR_INVALID_VECTOR_LENGTH);
 
         let (token0, token1) = two_pool::unpack_pool(pool);
         
@@ -91,7 +94,7 @@ module razor_stable_swap::stable_swap_router {
         min_amounts: vector<u256>,
         sender: &signer
     ) {
-        assert!(vector::length(&min_amounts) == THREE, stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&min_amounts) == THREE, ERROR_INVALID_VECTOR_LENGTH);
 
         let sender_addr = signer::address_of(sender);
         let lp_metadata = object::address_to_object<Metadata>(lp_token_address);
@@ -116,7 +119,7 @@ module razor_stable_swap::stable_swap_router {
         min_amounts: vector<u256>,
         sender: &signer
     ) {
-        assert!(vector::length(&min_amounts) == TWO, stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&min_amounts) == TWO, ERROR_INVALID_VECTOR_LENGTH);
 
         let sender_addr = signer::address_of(sender);
         let lp_metadata = object::address_to_object<Metadata>(lp_token_address);
@@ -141,7 +144,7 @@ module razor_stable_swap::stable_swap_router {
         max_burn_amount: u256,
         sender: &signer
     ) {
-        assert!(vector::length(&amounts) == THREE, stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&amounts) == THREE, ERROR_INVALID_VECTOR_LENGTH);
 
         let sender_addr = signer::address_of(sender);
         let pool_object = object::address_to_object<ThreePool>(lp_token_address);
@@ -163,7 +166,7 @@ module razor_stable_swap::stable_swap_router {
         max_burn_amount: u256,
         sender: &signer
     ) {
-        assert!(vector::length(&amounts) == TWO, stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&amounts) == TWO, ERROR_INVALID_VECTOR_LENGTH);
 
         let sender_addr = signer::address_of(sender);
         let pool_object = object::address_to_object<TwoPool>(lp_token_address);
@@ -418,7 +421,7 @@ module razor_stable_swap::stable_swap_router {
         sender: &signer
     ) {
         let sender_addr = signer::address_of(sender);
-        assert!(vector::length(&path) - 1 == vector::length(&flag), stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&path) - 1 == vector::length(&flag), ERROR_INVALID_VECTOR_LENGTH);
 
         let i = 0;
         while (i < vector::length(&flag)) {
@@ -526,10 +529,10 @@ module razor_stable_swap::stable_swap_router {
         sender: &signer
     ) {
         let sender_addr = signer::address_of(sender);
-        assert!(vector::length(&path) - 1 == vector::length(&flag), stable_swap_errors::invalid_vector_length());
+        assert!(vector::length(&path) - 1 == vector::length(&flag), ERROR_INVALID_VECTOR_LENGTH);
 
         let amounts = router_helper::get_stable_amounts_in(path, flag, amount_out as u256);
-        assert!(*vector::borrow(&amounts, 0) <= (amount_in_max as u256), stable_swap_errors::excessive_input_amount());
+        assert!(*vector::borrow(&amounts, 0) <= (amount_in_max as u256), ERROR_EXCESSIVE_INPUT_AMOUNT);
 
         let i = 0;
         while (i < vector::length(&flag)) {

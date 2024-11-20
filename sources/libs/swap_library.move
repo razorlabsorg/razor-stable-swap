@@ -7,7 +7,8 @@ module razor_stable_swap::stable_swap_library {
 
   use aptos_std::comparator;
 
-  use razor_stable_swap::stable_swap_errors;
+  /// Identical Addresses
+  const ERROR_IDENTICAL_ADDRESSES: u64 = 1;
 
   public fun is_sorted_two(token0: Object<Metadata>, token1: Object<Metadata>): bool {
     let token0_addr = object::object_address(&token0);
@@ -25,7 +26,7 @@ module razor_stable_swap::stable_swap_library {
 
     let tokenA_addr = object::object_address(&tokenA);
     let tokenB_addr = object::object_address(&tokenB);
-    assert!(tokenA_addr != tokenB_addr, stable_swap_errors::identical_addresses());
+    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
 
     if (!is_sorted_two(tokenA, tokenB)) {
       vector::reverse(&mut tokenVector);

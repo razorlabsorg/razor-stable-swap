@@ -14,7 +14,6 @@ module razor_stable_swap::two_pool {
     use aptos_std::comparator;
 
     use razor_stable_swap::controller;
-    use razor_stable_swap::swap_errors;
 
     friend razor_stable_swap::factory;
     friend razor_stable_swap::two_pool_info;
@@ -37,6 +36,73 @@ module razor_stable_swap::two_pool {
     
     const ADMIN_ACTIONS_DELAY: u64 = 259200; // 3 days in seconds
     const MIN_RAMP_TIME: u64 = 86400; // 1 day in seconds
+
+    /// Pool has already been initialized
+    const ERROR_POOL_ALREADY_INITIALIZED: u64 = 1;
+    /// Caller is not authorized to make this call
+    const ERROR_UNAUTHORIZED: u64 = 2;
+    /// Invalid coin type for the operation
+    const ERROR_INVALID_COIN: u64 = 3;
+    /// Pool is in a killed state
+    const ERROR_POOL_IS_KILLED: u64 = 4;
+    /// Invalid number of coins for the operation
+    const ERROR_INVALID_COIN_COUNT: u64 = 5;
+    /// Invalid amplification coefficient (A)
+    const ERROR_INVALID_A: u64 = 6;
+    /// Fee is set too high
+    const ERROR_FEE_TOO_HIGH: u64 = 7;
+    /// Admin fee is set too high
+    const ERROR_ADMIN_FEE_TOO_HIGH: u64 = 8;
+    /// Coin decimal precision is too high
+    const ERROR_COIN_DECIMAL_TOO_HIGH: u64 = 9;
+    /// Invalid amounts provided for the operation
+    const ERROR_INVALID_AMOUNTS: u64 = 10;
+    /// New D value must be greater than the old D value
+    const ERROR_D1_MUST_BE_GREATER_THAN_D0: u64 = 11;
+    /// Initial deposit requires all coins to be added
+    const ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS: u64 = 12;
+    /// Insufficient amount minted
+    const ERROR_INSUFFICIENT_MINT_AMOUNT: u64 = 13;
+    /// Invalid coin index provided
+    const ERROR_INVALID_COIN_INDEX: u64 = 14;
+    /// Insufficient output amount for the operation
+    const ERROR_INSUFFICIENT_OUTPUT_AMOUNT: u64 = 16;
+    /// Insufficient withdrawal amount
+    const ERROR_INSUFFICIENT_WITHDRAWAL_AMOUNT: u64 = 17;
+    /// Amount provided is zero
+    const ERROR_ZERO_AMOUNT: u64 = 18;
+    /// Total supply is zero
+    const ERROR_ZERO_TOTAL_SUPPLY: u64 = 19;
+    /// Invalid D value calculated
+    const ERROR_INVALID_D: u64 = 20;
+    /// Exceeds maximum burn amount
+    const ERROR_EXCEED_MAX_BURN_AMOUNT: u64 = 21;
+    /// Insufficient coins removed from the pool
+    const ERROR_INSUFFICIENT_COINS_REMOVED: u64 = 22;
+    /// Amplification coefficient (A) ramping is already in progress
+    const ERROR_RAMP_A_IN_PROGRESS: u64 = 23;
+    /// Ramp time is too short
+    const ERROR_RAMP_TIME_TOO_SHORT: u64 = 24;
+    /// Invalid amplification coefficient (A) value
+    const ERROR_INVALID_A_VALUE: u64 = 25;
+    /// Admin deadline is not zero when it should be
+    const ERROR_ADMIN_DEADLINE_NOT_ZERO: u64 = 26;
+    /// Admin deadline is zero when it shouldn't be
+    const ERROR_ADMIN_DEADLINE_IS_ZERO: u64 = 27;
+    /// Fee change attempted too early
+    const ERROR_FEE_CHANGE_TOO_EARLY: u64 = 28;
+    /// No admin fees available
+    const ERROR_NO_ADMIN_FEES: u64 = 29;
+    /// Kill deadline has already passed
+    const ERROR_KILL_DEADLINE_PASSED: u64 = 30;
+    /// Pool is already in a killed state
+    const ERROR_POOL_ALREADY_KILLED: u64 = 31;
+    /// Pool is not in a killed state
+    const ERROR_POOL_NOT_KILLED: u64 = 32;
+    /// Balance exceeds the allowed limit
+    const ERROR_EXCESS_BALANCE: u64 = 33;
+    /// Fewer coins received in exchange than expected
+    const ERROR_FEWER_COINS_IN_EXCHANGE: u64 = 34;
 
     #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
     struct TwoPool has key {
@@ -152,7 +218,7 @@ module razor_stable_swap::two_pool {
         fee: u256,
         admin_fee: u256
     ): Object<TwoPool> {
-        assert!(vector::length(&coins) == N_COINS, swap_errors::invalid_coin_count());
+        assert!(vector::length(&coins) == N_COINS, ERROR_INVALID_COIN_COUNT);
 
         let token0 = *vector::borrow(&coins, 0);
         let token1 = *vector::borrow(&coins, 1);
@@ -162,9 +228,9 @@ module razor_stable_swap::two_pool {
             return initialize(coins, a, fee, admin_fee)
         };
         // Validate inputs
-        assert!(a > 0 && a <= MAX_A, swap_errors::invalid_a());
-        assert!(fee <= MAX_FEE, swap_errors::fee_too_high());
-        assert!(admin_fee <= MAX_ADMIN_FEE, swap_errors::admin_fee_too_high());
+        assert!(a > 0 && a <= MAX_A, ERROR_INVALID_A);
+        assert!(fee <= MAX_FEE, ERROR_FEE_TOO_HIGH);
+        assert!(admin_fee <= MAX_ADMIN_FEE, ERROR_ADMIN_FEE_TOO_HIGH);
 
         // Create the pool object
         let pool_constructor_ref = create_lp_token(token0, token1);
@@ -183,7 +249,7 @@ module razor_stable_swap::two_pool {
         while (i < N_COINS) {
             let coin = vector::borrow(&coins, i);
             let coin_decimals = fungible_asset::decimals(*coin);
-            assert!(coin_decimals <= MAX_DECIMAL, swap_errors::coin_decimal_too_high());
+            assert!(coin_decimals <= MAX_DECIMAL, ERROR_COIN_DECIMAL_TOO_HIGH);
 
             vector::push_back(&mut balances, 0);
             let precision_mul = pow(10, (MAX_DECIMAL - coin_decimals as u64));
@@ -358,7 +424,7 @@ module razor_stable_swap::two_pool {
         let token1 = pool_data.token1;
         
         // Ensure the amounts vector has the correct length
-        assert!(vector::length(&amounts) == N_COINS, swap_errors::invalid_amounts());
+        assert!(vector::length(&amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
 
         let amp = get_a(pool_data);
         let old_balances = vector::empty<u256>();
@@ -416,8 +482,8 @@ module razor_stable_swap::two_pool {
 
         let pool_data = pool_data_mut<TwoPool>(&pool);
 
-        assert!(!pool_data.is_killed, swap_errors::pool_is_killed());
-        assert!(vector::length(&amounts) == N_COINS, swap_errors::invalid_amounts());
+        assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
+        assert!(vector::length(&amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
 
         let fees = vector::empty<u256>();
         let _fee = (pool_data.fee * (N_COINS as u256)) / (4 * ((N_COINS - 1) as u256));
@@ -434,13 +500,13 @@ module razor_stable_swap::two_pool {
         for (i in 0..N_COINS) {
             let amount = fungible_asset::amount(vector::borrow(&amounts, i));
             if (token_supply == 0) {
-                assert!(amount > 0, swap_errors::initial_deposit_requires_all_coins());
+                assert!(amount > 0, ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS);
             };
             *vector::borrow_mut(&mut new_balances, i) = *vector::borrow(&new_balances, i) + (amount as u256);
         };
 
         let d1 = get_d(&new_balances, amp);
-        assert!(d1 > d0, swap_errors::d1_must_be_greater_than_d0());
+        assert!(d1 > d0, ERROR_D1_MUST_BE_GREATER_THAN_D0);
 
         // Recalculate the invariant accounting for fees
         let d2 = d1;
@@ -466,7 +532,7 @@ module razor_stable_swap::two_pool {
             pool_data.balances = new_balances;
         };
 
-        assert!(mint_amount >= min_mint_amount, swap_errors::insufficient_mint_amount());
+        assert!(mint_amount >= min_mint_amount, ERROR_INSUFFICIENT_MINT_AMOUNT);
 
         // Take coins from the sender and mint LP tokens
         vector::reverse(&mut amounts);
@@ -490,7 +556,7 @@ module razor_stable_swap::two_pool {
     }
 
     fun get_y(i: u64, j: u64, x: u256, xp: &vector<u256>, pool: &TwoPool): u256 {
-        assert!(i != j && i < N_COINS && j < N_COINS, swap_errors::invalid_coin());
+        assert!(i != j && i < N_COINS && j < N_COINS, ERROR_INVALID_COIN);
         let amp = get_a(pool);
         let d = get_d(xp, amp);
         let c = d;
@@ -540,7 +606,7 @@ module razor_stable_swap::two_pool {
         pool: &Object<TwoPool>, 
     ): u256 acquires TwoPool {
         let pool_data = pool_data<TwoPool>(pool);
-        assert!(i != j && i < N_COINS && j < N_COINS, swap_errors::invalid_coin_index());
+        assert!(i != j && i < N_COINS && j < N_COINS, ERROR_INVALID_COIN_INDEX);
 
         let xp = xp(pool_data);
         let rates = &pool_data.rates;
@@ -560,7 +626,7 @@ module razor_stable_swap::two_pool {
         pool: &Object<TwoPool>, 
     ): u256 acquires TwoPool {
         let pool_data = pool_data<TwoPool>(pool);
-        assert!(i != j && i < N_COINS && j < N_COINS, swap_errors::invalid_coin_index());
+        assert!(i != j && i < N_COINS && j < N_COINS, ERROR_INVALID_COIN_INDEX);
 
         let xp = xp(pool_data);
         let precisions = &pool_data.precision_muls;
@@ -584,8 +650,8 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut<TwoPool>(pool);
         let pool_signer = &controller::get_signer();
         
-        assert!(!pool_data.is_killed, swap_errors::pool_is_killed());
-        assert!(i != j && i < N_COINS && j < N_COINS, swap_errors::invalid_coin_index());
+        assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
+        assert!(i != j && i < N_COINS && j < N_COINS, ERROR_INVALID_COIN_INDEX);
 
         let xp = xp(pool_data);
         let rates = &pool_data.rates;
@@ -597,7 +663,7 @@ module razor_stable_swap::two_pool {
 
         // Convert dy to token precision and check min_dy
         let dy_amount = (dy - dy_fee) * PRECISION / *vector::borrow(rates, j);
-        assert!(dy_amount >= min_dy, swap_errors::insufficient_output_amount());
+        assert!(dy_amount >= min_dy, ERROR_INSUFFICIENT_OUTPUT_AMOUNT);
 
         // Calculate admin fee
         let dy_admin_fee = dy_fee * pool_data.admin_fee / FEE_DENOMINATOR;
@@ -640,12 +706,12 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut<TwoPool>(pool);
         let pool_signer = &controller::get_signer();
         
-        assert!(!pool_data.is_killed, swap_errors::pool_is_killed());
-        assert!(vector::length(&min_amounts) == N_COINS, swap_errors::invalid_amounts());
+        assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
+        assert!(vector::length(&min_amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
 
         let total_supply = (option::extract(&mut fungible_asset::supply(*pool)) as u256);
         let lp_amount_value = (fungible_asset::amount(&lp_amount) as u256);
-        assert!(lp_amount_value > 0, swap_errors::zero_amount());
+        assert!(lp_amount_value > 0, ERROR_ZERO_AMOUNT);
 
         let amounts = vector::empty<u256>();
         let balances = &mut pool_data.balances;
@@ -655,7 +721,7 @@ module razor_stable_swap::two_pool {
         let i = 0;
         while (i < N_COINS) {
             let amount = lp_amount_value * *vector::borrow(balances, i) / total_supply;
-            assert!(amount >= *vector::borrow(&min_amounts, i), swap_errors::insufficient_withdrawal_amount());
+            assert!(amount >= *vector::borrow(&min_amounts, i), ERROR_INSUFFICIENT_WITHDRAWAL_AMOUNT);
             vector::push_back(&mut amounts, amount);
 
             // Withdraw tokens
@@ -689,11 +755,11 @@ module razor_stable_swap::two_pool {
         let pool_signer = &controller::get_signer();
         let store = ensure_account_token_store(recipient, *pool);
         
-        assert!(!pool_data.is_killed, swap_errors::pool_is_killed());
-        assert!(vector::length(&amounts) == N_COINS, swap_errors::invalid_amounts());
+        assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
+        assert!(vector::length(&amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
 
         let token_supply = (option::extract(&mut fungible_asset::supply(*pool)) as u256);
-        assert!(token_supply > 0, swap_errors::zero_total_supply());
+        assert!(token_supply > 0, ERROR_ZERO_TOTAL_SUPPLY);
 
         let fee = (pool_data.fee * (N_COINS as u256)) / (4 * (N_COINS - 1) as u256);
         let admin_fee = pool_data.admin_fee;
@@ -708,7 +774,7 @@ module razor_stable_swap::two_pool {
         };
 
         let d1 = get_d_mem(&new_balances, amp, pool_data);
-        assert!(d1 > 0, swap_errors::invalid_d());
+        assert!(d1 > 0, ERROR_INVALID_D);
 
         let fees = vector::empty<u256>();
 
@@ -727,9 +793,9 @@ module razor_stable_swap::two_pool {
         let d2 = get_d_mem(&new_balances, amp, pool_data);
 
         let burn_amount = ((d0 - d2) * token_supply) / d0;
-        assert!(burn_amount > 0, swap_errors::zero_amount());
+        assert!(burn_amount > 0, ERROR_ZERO_AMOUNT);
         burn_amount = burn_amount + 1;
-        assert!(burn_amount <= max_burn_amount, swap_errors::exceed_max_burn_amount());
+        assert!(burn_amount <= max_burn_amount, ERROR_EXCEED_MAX_BURN_AMOUNT);
 
         // Withdraw tokens
         let withdrawn_assets = vector::empty<FungibleAsset>();
@@ -763,7 +829,7 @@ module razor_stable_swap::two_pool {
     /// x_1**2 + b*x_1 = c
     /// x_1 = (x_1**2 + c) / (2*x_1 + b)
     fun get_y_d(a: u256, token_index: u64, xp: &vector<u256>, d: u256): u256 {
-        assert!(token_index < N_COINS, swap_errors::invalid_coin_index());
+        assert!(token_index < N_COINS, ERROR_INVALID_COIN_INDEX);
         let n_coins = (N_COINS as u256);
         let ann = a * n_coins;
         let c = d;
@@ -805,7 +871,7 @@ module razor_stable_swap::two_pool {
         i: u64,
     ): (u256, u256) acquires TwoPool {
         let pool_data = pool_data<TwoPool>(pool);
-        assert!(i < N_COINS, swap_errors::invalid_coin_index());
+        assert!(i < N_COINS, ERROR_INVALID_COIN_INDEX);
 
         let amp = get_a(pool_data);
         let xp = xp(pool_data);
@@ -858,10 +924,10 @@ module razor_stable_swap::two_pool {
 
         let pool_data = pool_data_mut(pool);
         let pool_signer = &controller::get_signer();
-        assert!(!pool_data.is_killed, swap_errors::pool_is_killed());
+        assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
         let provider_coin_store = ensure_account_token_store(provider, *pool);
 
-        assert!(dy >= min_amount, swap_errors::insufficient_coins_removed());
+        assert!(dy >= min_amount, ERROR_INSUFFICIENT_COINS_REMOVED);
 
         let balances = &mut pool_data.balances;
         *vector::borrow_mut(balances, i) = *vector::borrow(balances, i) - ((dy_fee * pool_data.admin_fee) / FEE_DENOMINATOR);
@@ -890,18 +956,18 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut(pool);
 
         // Check if enough time has passed since the last ramp A
-        assert!(now >= pool_data.initial_a_time + MIN_RAMP_TIME, swap_errors::ramp_a_in_progress());
+        assert!(now >= pool_data.initial_a_time + MIN_RAMP_TIME, ERROR_RAMP_A_IN_PROGRESS);
         // Check if the proposed ramp time is long enough
-        assert!(future_time >= (now + (MIN_RAMP_TIME) as u256), swap_errors::ramp_time_too_short());
+        assert!(future_time >= (now + (MIN_RAMP_TIME) as u256), ERROR_RAMP_TIME_TOO_SHORT);
 
         
         let initial_a = get_a(pool_data);
-        assert!(future_a > 0 && future_a < MAX_A, swap_errors::invalid_a_value());
+        assert!(future_a > 0 && future_a < MAX_A, ERROR_INVALID_A_VALUE);
         
         assert!(
             (future_a >= initial_a && future_a <= initial_a * MAX_A_CHANGE) ||
             (future_a < initial_a && future_a * MAX_A_CHANGE >= initial_a),
-            swap_errors::invalid_a_value()
+            ERROR_INVALID_A_VALUE
         );
 
         // Update the pool data
@@ -947,9 +1013,9 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut(pool);
 
         // Validate new fees
-        assert!(new_fee <= MAX_FEE, swap_errors::fee_too_high());
-        assert!(new_admin_fee <= MAX_ADMIN_FEE, swap_errors::admin_fee_too_high());
-        assert!(pool_data.admin_actions_deadline == 0, swap_errors::admin_deadline_not_zero());
+        assert!(new_fee <= MAX_FEE, ERROR_FEE_TOO_HIGH);
+        assert!(new_admin_fee <= MAX_ADMIN_FEE, ERROR_ADMIN_FEE_TOO_HIGH);
+        assert!(pool_data.admin_actions_deadline == 0, ERROR_ADMIN_DEADLINE_NOT_ZERO);
 
         // Set the new fees and deadline
         let now = timestamp::now_seconds();
@@ -975,8 +1041,8 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut(pool);
 
         // Check if there's an active fee change and if enough time has passed
-        assert!(pool_data.admin_actions_deadline != 0, swap_errors::admin_deadline_is_zero());
-        assert!(timestamp::now_seconds() >= pool_data.admin_actions_deadline, swap_errors::fee_change_too_early());
+        assert!(pool_data.admin_actions_deadline != 0, ERROR_ADMIN_DEADLINE_IS_ZERO);
+        assert!(timestamp::now_seconds() >= pool_data.admin_actions_deadline, ERROR_FEE_CHANGE_TOO_EARLY);
 
         // Apply the new fees
         pool_data.admin_actions_deadline = 0;
@@ -1034,7 +1100,7 @@ module razor_stable_swap::two_pool {
             i = i + 1;
         };
 
-        assert!(total_withdrawn > 0, swap_errors::no_admin_fees());
+        assert!(total_withdrawn > 0, ERROR_NO_ADMIN_FEES);
 
         withdrawn_assets
     }
@@ -1049,10 +1115,10 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut(pool);
 
         // Check if the kill deadline has passed
-        assert!(pool_data.kill_deadline > timestamp::now_seconds(), swap_errors::kill_deadline_passed());
+        assert!(pool_data.kill_deadline > timestamp::now_seconds(), ERROR_KILL_DEADLINE_PASSED);
 
         // Check if the pool is already killed
-        assert!(!pool_data.is_killed, swap_errors::pool_already_killed());
+        assert!(!pool_data.is_killed, ERROR_POOL_ALREADY_KILLED);
 
         // Kill the pool
         pool_data.is_killed = true;
@@ -1070,7 +1136,7 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut(pool);
 
         // Check if the pool is killed
-        assert!(pool_data.is_killed, swap_errors::pool_not_killed());
+        assert!(pool_data.is_killed, ERROR_POOL_NOT_KILLED);
 
         // Unkill the pool
         pool_data.is_killed = false;

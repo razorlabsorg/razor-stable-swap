@@ -5,12 +5,14 @@ module razor_stable_swap::two_pool_deployer {
   use aptos_framework::fungible_asset::Metadata;
   use aptos_framework::object::{Self, Object};
 
-  use razor_stable_swap::stable_swap_errors;
   use razor_stable_swap::two_pool::{Self, TwoPool};
 
   friend razor_stable_swap::factory;
 
   const N_COINS: u64 = 2;
+
+  /// Identical Addresses
+  const ERROR_IDENTICAL_ADDRESSES: u64 = 1;
 
   fun is_sorted(token0: Object<Metadata>, token1: Object<Metadata>): bool {
     let token0_addr = object::object_address(&token0);
@@ -26,7 +28,7 @@ module razor_stable_swap::two_pool_deployer {
   ): (Object<Metadata>, Object<Metadata>) {
     let tokenA_addr = object::object_address(&tokenA);
     let tokenB_addr = object::object_address(&tokenB);
-    assert!(tokenA_addr != tokenB_addr, stable_swap_errors::identical_addresses());
+    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
     let (token0, token1);
     if (is_sorted(tokenA, tokenB)) {
       (token0, token1) = (tokenA, tokenB)
