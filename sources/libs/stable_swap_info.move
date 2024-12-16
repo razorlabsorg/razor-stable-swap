@@ -90,4 +90,23 @@ module razor_stable_swap::stable_swap_info {
       0
     }
   }
+
+  #[view]
+  public fun get_exchange_fee(
+    swap_address: address,
+    i: u64,
+    j: u64,
+    dx: u256
+  ): (u256, u256) {
+    let n_coins = num_coins(swap_address);
+    if (n_coins == 2) {
+      let pool = object::address_to_object<TwoPool>(swap_address);
+      two_pool_info::get_exchange_fee(pool, i, j, dx)
+    } else if (n_coins == 3) {
+      let pool = object::address_to_object<ThreePool>(swap_address);
+      three_pool_info::get_exchange_fee(pool, i, j, dx)
+    } else {
+      (0, 0)
+    }
+  }
 }
