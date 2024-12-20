@@ -25,10 +25,30 @@ module razor_stable_swap::three_pool_info {
     const ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS: u64 = 5;
 
     #[view]
+    public fun fee_denominator(): u256 {
+        FEE_DENOMINATOR
+    }
+
+    #[view]
     public fun token(pool: Object<ThreePool>): address {
         let (t0, t1, t2) = three_pool::unpack_pool(pool);
         let pool_token_address = three_pool::pool_address(t0, t1, t2);
         pool_token_address
+    }
+
+    #[view]
+    public fun lp_token_supply(pool: Object<ThreePool>): u128 {
+        three_pool::lp_token_supply(pool)
+    }
+
+    #[view]
+    public fun fee(pool: Object<ThreePool>): u256 {
+        three_pool::fee(&pool)
+    }
+
+    #[view]
+    public fun a(pool: Object<ThreePool>): u256 {
+        three_pool::a(&pool)
     }
 
     #[view]

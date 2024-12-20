@@ -291,6 +291,10 @@ module razor_stable_swap::three_pool {
         pool
     }
 
+    public(friend) fun fee(pool: &Object<ThreePool>): u256 acquires ThreePool {
+        pool_data<ThreePool>(pool).fee
+    }
+
     /// Calculates the amplification coefficient of the pool (A)
     fun get_a(pool: &ThreePool): u256 {
         let t1 = pool.future_a_time;
@@ -413,6 +417,10 @@ module razor_stable_swap::three_pool {
 
         let token_supply  = (option::extract(&mut fungible_asset::supply<ThreePool>(pool)) as u256);
         (d * PRECISION) / token_supply
+    }
+
+    public(friend) fun lp_token_supply(pool: Object<ThreePool>): u128 acquires ThreePool {
+        option::extract(&mut fungible_asset::supply(pool))
     }
 
     public(friend) fun calc_token_amount(

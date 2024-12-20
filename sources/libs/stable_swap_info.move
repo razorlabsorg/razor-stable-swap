@@ -19,6 +19,46 @@ module razor_stable_swap::stable_swap_info {
   }
 
   #[view]
+  public fun fee_denominator(swap_address: address): u256 {
+    let n_coins = num_coins(swap_address);
+    if (n_coins == 2) {
+      two_pool_info::fee_denominator()
+    } else if (n_coins == 3) {
+      three_pool_info::fee_denominator()
+    } else {
+      0
+    }
+  }
+
+  #[view]
+  public fun lp_token_supply(lp_token_address: address): u128 {
+    let n_coins = num_coins(lp_token_address);
+    if (n_coins == 2) {
+      let pool = object::address_to_object<TwoPool>(lp_token_address);
+      two_pool_info::lp_token_supply(pool)
+    } else if (n_coins == 3) {
+      let pool = object::address_to_object<ThreePool>(lp_token_address);
+      three_pool_info::lp_token_supply(pool)
+    } else {
+      0
+    }
+  }
+
+  #[view]
+  public fun fee(swap_address: address): u256 {
+    let n_coins = num_coins(swap_address);
+    if (n_coins == 2) {
+      let pool = object::address_to_object<TwoPool>(swap_address);
+      two_pool_info::fee(pool)
+    } else if (n_coins == 3) {
+      let pool = object::address_to_object<ThreePool>(swap_address);
+      three_pool_info::fee(pool)
+    } else {
+      0
+    }
+  }
+
+  #[view]
   public fun get_dx(
     swap_address: address,
     i: u64,
@@ -107,6 +147,34 @@ module razor_stable_swap::stable_swap_info {
       three_pool_info::get_exchange_fee(pool, i, j, dx)
     } else {
       (0, 0)
+    }
+  }
+
+  #[view]
+  public fun balances(swap_address: address): vector<u256> {
+    let n_coins = num_coins(swap_address);
+    if (n_coins == 2) {
+      let pool = object::address_to_object<TwoPool>(swap_address);
+      two_pool_info::balances(pool)
+    } else if (n_coins == 3) {
+      let pool = object::address_to_object<ThreePool>(swap_address);
+      three_pool_info::balances(pool)
+    } else {
+      vector::empty<u256>()
+    }
+  }
+
+  #[view]
+  public fun a(swap_address: address): u256 {
+    let n_coins = num_coins(swap_address);
+    if (n_coins == 2) {
+      let pool = object::address_to_object<TwoPool>(swap_address);
+      two_pool_info::a(pool)
+    } else if (n_coins == 3) {
+      let pool = object::address_to_object<ThreePool>(swap_address);
+      three_pool_info::a(pool)
+    } else {
+      0
     }
   }
 }

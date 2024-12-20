@@ -288,6 +288,10 @@ module razor_stable_swap::two_pool {
         pool
     }
 
+    public(friend) fun fee(pool: &Object<TwoPool>): u256 acquires TwoPool {
+        pool_data<TwoPool>(pool).fee
+    }
+
     /// Calculates the amplification coefficient of the pool (A)
     fun get_a(pool: &TwoPool): u256 {
         let t1 = pool.future_a_time;
@@ -411,6 +415,10 @@ module razor_stable_swap::two_pool {
 
         let token_supply  = (option::extract(&mut fungible_asset::supply<TwoPool>(pool)) as u256);
         (d * PRECISION) / token_supply
+    }
+
+    public(friend) fun lp_token_supply(pool: Object<TwoPool>): u128 acquires TwoPool {
+        option::extract(&mut fungible_asset::supply(pool))
     }
 
     #[view]
