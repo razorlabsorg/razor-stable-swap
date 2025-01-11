@@ -35,7 +35,7 @@ module razor_stable_swap::router {
         metadata
     }
 
-    fun add_liquidity_three(
+    inline fun add_liquidity_three(
         pool: Object<ThreePool>,
         amounts: vector<u64>,
         min_mint_amount: u256,
@@ -62,7 +62,7 @@ module razor_stable_swap::router {
         dispatchable_fungible_asset::deposit(coin_store, lp_tokens);
     }
 
-    fun add_liquidity_two(
+    inline fun add_liquidity_two(
         pool: Object<TwoPool>,
         amounts: vector<u64>,
         min_mint_amount: u256,
@@ -88,7 +88,7 @@ module razor_stable_swap::router {
         dispatchable_fungible_asset::deposit(coin_store, lp_tokens);
     }
 
-    fun remove_liquidity_three(
+    inline fun remove_liquidity_three(
         lp_token_address: address,
         amount: u64,
         min_amounts: vector<u256>,
@@ -113,7 +113,7 @@ module razor_stable_swap::router {
         vector::destroy_empty<FungibleAsset>(withdrawn_assets);
     }
 
-    fun remove_liquidity_two(
+    inline fun remove_liquidity_two(
         lp_token_address: address,
         amount: u64,
         min_amounts: vector<u256>,
@@ -138,7 +138,7 @@ module razor_stable_swap::router {
         vector::destroy_empty<FungibleAsset>(withdrawn_assets);
     }
 
-    fun remove_liquidity_imbalance_three(
+    inline fun remove_liquidity_imbalance_three(
         lp_token_address: address,
         amounts: vector<u256>,
         max_burn_amount: u256,
@@ -160,7 +160,7 @@ module razor_stable_swap::router {
 
     }
 
-    fun remove_liquidity_imbalance_two(
+    inline fun remove_liquidity_imbalance_two(
         lp_token_address: address,
         amounts: vector<u256>,
         max_burn_amount: u256,
@@ -182,7 +182,7 @@ module razor_stable_swap::router {
 
     }
 
-    fun remove_liquidity_one_coin_three(
+    inline fun remove_liquidity_one_coin_three(
         lp_token_address: address,
         amount: u256,
         i: u64,
@@ -197,7 +197,7 @@ module razor_stable_swap::router {
         primary_fungible_store::deposit(sender_addr, output_asset);
     }
 
-    fun remove_liquidity_one_coin_two(
+    inline fun remove_liquidity_one_coin_two(
         lp_token_address: address,
         amount: u256,
         i: u64,
@@ -252,7 +252,7 @@ module razor_stable_swap::router {
         output_asset
     }
 
-    fun ramp_a_three(
+    inline fun ramp_a_three(
         pool: Object<ThreePool>,
         admin: &signer,
         future_a: u256,
@@ -261,7 +261,7 @@ module razor_stable_swap::router {
         three_pool::ramp_a(admin, future_a, future_time, &pool);
     }
 
-    fun ramp_a_two(
+    inline fun ramp_a_two(
         pool: Object<TwoPool>,
         admin: &signer,
         future_a: u256,
@@ -270,21 +270,21 @@ module razor_stable_swap::router {
         two_pool::ramp_a(admin, future_a, future_time, &pool);
     }
 
-    fun stop_ramp_a_three(
+    inline fun stop_ramp_a_three(
         pool: Object<ThreePool>,
         admin: &signer,
     ) {
         three_pool::stop_rampget_a(admin, &pool);
     }
 
-    fun stop_ramp_a_two(
+    inline fun stop_ramp_a_two(
         pool: Object<TwoPool>,
         admin: &signer,
     ) {
         two_pool::stop_rampget_a(admin, &pool);
     }
 
-    fun commit_new_fee_three(
+    inline fun commit_new_fee_three(
         pool: Object<ThreePool>,
         admin: &signer,
         new_fee: u256,
@@ -293,7 +293,7 @@ module razor_stable_swap::router {
         three_pool::commit_new_fee(admin, &pool, new_fee, new_admin_fee);
     }
 
-    fun commit_new_fee_two(
+    inline fun commit_new_fee_two(
         pool: Object<TwoPool>,
         admin: &signer,
         new_fee: u256,
@@ -302,37 +302,35 @@ module razor_stable_swap::router {
         two_pool::commit_new_fee(admin, &pool, new_fee, new_admin_fee);
     }
 
-    fun apply_new_fee_three(
+    inline fun apply_new_fee_three(
         admin: &signer,
         pool: Object<ThreePool>
     ) {
         three_pool::apply_new_fee(admin, &pool);
     }
 
-    fun apply_new_fee_two(
+    inline fun apply_new_fee_two(
         admin: &signer,
         pool: Object<TwoPool>
     ) {
         two_pool::apply_new_fee(admin, &pool);
     }
 
-    
-
-    fun revert_new_parameters_three(
+    inline fun revert_new_parameters_three(
         admin: &signer,
         pool: Object<ThreePool>
     ) {
         three_pool::revert_new_parameters(admin, &pool);
     }
 
-    fun revert_new_parameters_two(
+    inline fun revert_new_parameters_two(
         admin: &signer,
         pool: Object<TwoPool>
     ) {
         two_pool::revert_new_parameters(admin, &pool);
     }
 
-    fun withdraw_admin_fees_three(
+    inline fun withdraw_admin_fees_three(
         admin: &signer,
         pool: Object<ThreePool>
     ) {
@@ -346,7 +344,7 @@ module razor_stable_swap::router {
         vector::destroy_empty<FungibleAsset>(fee_assets);
     }
 
-    fun withdraw_admin_fees_two(
+    inline fun withdraw_admin_fees_two(
         admin: &signer,
         pool: Object<TwoPool>
     ) {
@@ -360,7 +358,7 @@ module razor_stable_swap::router {
         vector::destroy_empty<FungibleAsset>(fee_assets);
     }
 
-    fun kill_me_three(
+    inline fun kill_me_three(
         admin: &signer,
         pool: address
     ) {
@@ -368,7 +366,7 @@ module razor_stable_swap::router {
         three_pool::kill_me(admin, &pool_object);
     }
 
-    fun kill_me_two(
+    inline fun kill_me_two(
         admin: &signer,
         pool: address
     ) {
@@ -376,7 +374,7 @@ module razor_stable_swap::router {
         two_pool::kill_me(admin, &pool_object);
     }
 
-    fun unkill_me_three(
+    inline fun unkill_me_three(
         admin: &signer,
         pool: address
     ) {
@@ -384,7 +382,7 @@ module razor_stable_swap::router {
         three_pool::unkill_me(admin, &pool_object);
     }
 
-    fun unkill_me_two(
+    inline fun unkill_me_two(
         admin: &signer,
         pool: address
     ) {
@@ -413,7 +411,7 @@ module razor_stable_swap::router {
         output_asset
     }
 
-    fun swap(
+    inline fun swap(
         path: vector<address>,
         flag: vector<u256>,
         amount_in: u64,

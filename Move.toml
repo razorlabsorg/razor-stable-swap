@@ -5,8 +5,8 @@ authors = []
 
 [addresses]
 razor_stable_swap = "_"
-admin = "380cc51342dc20d61af1a05abbd3a4ba718e555ef8c01f1337698180d5ecff31"
-fee_admin = "5dc6ad760510b85c4187bf124c0b6ffffefd48d39b4889ff1ffb507d285acdee"
+admin = "0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839"
+fee_admin = "0x4b1bf00e6b8dc4a7bc00f9dc02e5da424236afad275c8833b48c54b0496fd283"
 
 [dev-addresses]
 

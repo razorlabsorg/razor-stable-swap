@@ -35,9 +35,9 @@ module razor_stable_swap::swap_library {
   }
 
   public fun sort_tokens_three(
-        token0: Object<Metadata>,
-        token1: Object<Metadata>,
-        token2: Object<Metadata>
+    token0: Object<Metadata>,
+    token1: Object<Metadata>,
+    token2: Object<Metadata>,
   ): vector<Object<Metadata>> {
       let sorted = vector::empty<Object<Metadata>>();
       let addr0 = object::object_address(&token0);

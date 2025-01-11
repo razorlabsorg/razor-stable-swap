@@ -8,7 +8,7 @@ APTOS_NETWORK ?= custom
 ARTIFACTS_LEVEL ?= all
 DEFAULT_FUND_AMOUNT ?= 100000000
 DEFAULT_FUNDER_PRIVATE_KEY ?= 0x0
-DEV_ACCOUNT ?= 380cc51342dc20d61af1a05abbd3a4ba718e555ef8c01f1337698180d5ecff31
+DEV_ACCOUNT ?= 0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839
 STABLE_SWAP_ADDRESS ?= 0x8ea2ce721a4979fe30217fa974ac8ac9e37bb7f9a3dd79f6198a806cd8e620f0
 
 # ============================= CLEAN ============================= #
@@ -20,7 +20,7 @@ clean:
 compile:
 	aptos move compile \
 	--skip-fetch-latest-git-deps \
-	--included-artifacts $(ARTIFACTS_LEVEL) \
+	--included-artifacts none \
 	--save-metadata \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)"
 
@@ -46,7 +46,7 @@ upgrade:
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)" \
 	--object-address $(STABLE_SWAP_ADDRESS)
 
-doc:
+docs:
 	aptos move document \
 	--skip-fetch-latest-git-deps \
 	--skip-attribute-checks \

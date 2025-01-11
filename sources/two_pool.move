@@ -417,7 +417,7 @@ module razor_stable_swap::two_pool {
         (d * PRECISION) / token_supply
     }
 
-    public(friend) fun lp_token_supply(pool: Object<TwoPool>): u128 acquires TwoPool {
+    public(friend) fun lp_token_supply(pool: Object<TwoPool>): u128 {
         option::extract(&mut fungible_asset::supply(pool))
     }
 
@@ -927,7 +927,7 @@ module razor_stable_swap::two_pool {
         min_amount: u256,
         provider: address,
         pool: &Object<TwoPool>
-    ):FungibleAsset  acquires TwoPool {
+    ): FungibleAsset  acquires TwoPool {
         let (dy, dy_fee) = calc_withdraw_one_coin_internal(pool, token_amount, i);
 
         let pool_data = pool_data_mut(pool);
@@ -993,6 +993,7 @@ module razor_stable_swap::two_pool {
         });
         
     }
+    
     public(friend) fun stop_rampget_a(admin: &signer, pool: &Object<TwoPool>) acquires TwoPool {
 
         controller::assert_admin(admin);

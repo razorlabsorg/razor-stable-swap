@@ -419,7 +419,7 @@ module razor_stable_swap::three_pool {
         (d * PRECISION) / token_supply
     }
 
-    public(friend) fun lp_token_supply(pool: Object<ThreePool>): u128 acquires ThreePool {
+    public(friend) fun lp_token_supply(pool: Object<ThreePool>): u128 {
         option::extract(&mut fungible_asset::supply(pool))
     }
 
