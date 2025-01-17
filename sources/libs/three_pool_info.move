@@ -25,35 +25,10 @@ module razor_stable_swap::three_pool_info {
     const ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS: u64 = 5;
 
     #[view]
-    public fun fee_denominator(): u256 {
-        FEE_DENOMINATOR
-    }
-
-    #[view]
     public fun token(pool: Object<ThreePool>): address {
         let (t0, t1, t2) = three_pool::unpack_pool(pool);
         let pool_token_address = three_pool::pool_address(t0, t1, t2);
         pool_token_address
-    }
-
-    #[view]
-    public fun lp_token_supply(pool: Object<ThreePool>): u128 {
-        three_pool::lp_token_supply(pool)
-    }
-
-    #[view]
-    public fun fee(pool: Object<ThreePool>): u256 {
-        three_pool::fee(&pool)
-    }
-
-    #[view]
-    public fun a(pool: Object<ThreePool>): u256 {
-        three_pool::a(&pool)
-    }
-
-    #[view]
-    public fun balances(pool: Object<ThreePool>): vector<u256> {
-        three_pool::pool_balances(&pool)
     }
 
     #[view]
@@ -63,7 +38,7 @@ module razor_stable_swap::three_pool_info {
 
     #[view]
     public fun balance_from_token_address(pool: Object<ThreePool>, token_address: address): u256 {
-        let balances = balances(pool);
+        let balances = three_pool::pool_balances(&pool);
         let coins = three_pool::pool_coins(&pool);
         let i = 0;
         while (i < N_COINS) {
@@ -121,7 +96,7 @@ module razor_stable_swap::three_pool_info {
     #[view]
     public fun calc_coins_amount(pool: Object<ThreePool>, amount: u256): vector<u256> {
         let total_supply = (option::extract(&mut fungible_asset::supply(pool)) as u256);
-        let balances = balances(pool);
+        let balances = three_pool::pool_balances(&pool);
         let amounts = vector::empty<u256>();
 
         let i = 0;
@@ -146,7 +121,7 @@ module razor_stable_swap::three_pool_info {
         let amp = three_pool::a(&pool);
 
         let token_supply = (option::extract(&mut fungible_asset::supply(pool)) as u256);
-        let old_balances = balances(pool);
+        let old_balances = three_pool::pool_balances(&pool);
         let d0 = if (token_supply > 0) {
             get_d_mem(pool, old_balances, amp)
         } else {
@@ -217,7 +192,7 @@ module razor_stable_swap::three_pool_info {
         let amp = three_pool::a(&pool);
 
         let token_supply = (option::extract(&mut fungible_asset::supply(pool)) as u256);
-        let old_balances = balances(pool);
+        let old_balances = three_pool::pool_balances(&pool);
         let d0 = if (token_supply > 0) {
             get_d_mem(pool, old_balances, amp)
         } else {
@@ -270,7 +245,7 @@ module razor_stable_swap::three_pool_info {
         let admin_fee = three_pool::pool_admin_fee(&pool);
         let amp = three_pool::a(&pool);
 
-        let old_balances = balances(pool);
+        let old_balances = three_pool::pool_balances(&pool);
         let new_balances = old_balances;
         let d0 = get_d_mem(pool, old_balances, amp);
 
@@ -313,7 +288,7 @@ module razor_stable_swap::three_pool_info {
         let admin_fee = three_pool::pool_admin_fee(&pool);
         let amp = three_pool::a(&pool);
 
-        let old_balances = balances(pool);
+        let old_balances = three_pool::pool_balances(&pool);
         let xp = xp_mem(old_balances, pool);
         let rates = three_pool::pool_rates(&pool);
 
@@ -406,7 +381,7 @@ module razor_stable_swap::three_pool_info {
         assert!(i < N_COINS && j < N_COINS && i != j, ERROR_INVALID_COIN_INDEX);
 
         let pool_fee = three_pool::pool_fee(&pool);
-        let old_balances = balances(pool);
+        let old_balances = three_pool::pool_balances(&pool);
         let xp = xp_mem(old_balances, pool);
         let rates = three_pool::pool_rates(&pool);
         let amp = three_pool::a(&pool);

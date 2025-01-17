@@ -25,35 +25,10 @@ module razor_stable_swap::two_pool_info {
     const ERROR_INITIAL_DEPOSIT_REQUIRES_ALL_COINS: u64 = 5;
 
     #[view]
-    public fun fee_denominator(): u256 {
-        FEE_DENOMINATOR
-    }
-
-    #[view]
     public fun token(pool: Object<TwoPool>): address {
         let (t0, t1) = two_pool::unpack_pool(pool);
         let pool_token_address = two_pool::pool_address(t0, t1);
         pool_token_address
-    }
-
-    #[view]
-    public fun lp_token_supply(pool: Object<TwoPool>): u128 {
-        two_pool::lp_token_supply(pool)
-    }
-
-    #[view]
-    public fun fee(pool: Object<TwoPool>): u256 {
-        two_pool::fee(&pool)
-    }
-
-    #[view]
-    public fun a(pool: Object<TwoPool>): u256 {
-        two_pool::a(pool)
-    }
-
-    #[view]
-    public fun balances(pool: Object<TwoPool>): vector<u256> {
-        two_pool::pool_balances(&pool)
     }
 
     #[view]
@@ -63,7 +38,7 @@ module razor_stable_swap::two_pool_info {
 
     #[view]
     public fun balance_from_token_address(pool: Object<TwoPool>, token_address: address): u256 {
-        let balances = balances(pool);
+        let balances = two_pool::pool_balances(&pool);
         let coins = two_pool::pool_coins(&pool);
         let i = 0;
         while (i < N_COINS) {
@@ -121,7 +96,7 @@ module razor_stable_swap::two_pool_info {
     #[view]
     public fun calc_coins_amount(pool: Object<TwoPool>, amount: u256): vector<u256> {
         let total_supply = (option::extract(&mut fungible_asset::supply(pool)) as u256);
-        let balances = balances(pool);
+        let balances = two_pool::pool_balances(&pool);
         let amounts = vector::empty<u256>();
 
         let i = 0;
@@ -143,10 +118,10 @@ module razor_stable_swap::two_pool_info {
     public fun get_add_liquidity_mint_amount(pool: Object<TwoPool>, amounts: vector<u256>): u256 {
         let pool_fee = two_pool::pool_fee(&pool);
         let fee = (pool_fee * (N_COINS as u256)) / (4 * ((N_COINS - 1) as u256));
-        let amp = two_pool::a(pool);
+        let amp = two_pool::a(&pool);
 
         let token_supply = (option::extract(&mut fungible_asset::supply(pool)) as u256);
-        let old_balances = balances(pool);
+        let old_balances = two_pool::pool_balances(&pool);
         let d0 = if (token_supply > 0) {
             get_d_mem(pool, old_balances, amp)
         } else {
@@ -214,10 +189,10 @@ module razor_stable_swap::two_pool_info {
         let pool_fee = two_pool::pool_fee(&pool);
         let fee = (pool_fee * (N_COINS as u256)) / (4 * ((N_COINS - 1) as u256));
         let admin_fee = two_pool::pool_admin_fee(&pool);
-        let amp = two_pool::a(pool);
+        let amp = two_pool::a(&pool);
 
         let token_supply = option::extract(&mut fungible_asset::supply(pool));
-        let old_balances = balances(pool);
+        let old_balances = two_pool::pool_balances(&pool);
         let d0 = if (token_supply > 0) {
             get_d_mem(pool, old_balances, amp)
         } else {
@@ -267,9 +242,9 @@ module razor_stable_swap::two_pool_info {
         let pool_fee = two_pool::pool_fee(&pool);
         let fee = (pool_fee * (N_COINS as u256)) / (4 * ((N_COINS - 1) as u256));
         let admin_fee = two_pool::pool_admin_fee(&pool);
-        let amp = two_pool::a(pool);
+        let amp = two_pool::a(&pool);
 
-        let old_balances = balances(pool);
+        let old_balances = two_pool::pool_balances(&pool);
         let new_balances = old_balances;
         let d0 = get_d_mem(pool, old_balances, amp);
 
@@ -310,9 +285,9 @@ module razor_stable_swap::two_pool_info {
 
         let pool_fee = two_pool::pool_fee(&pool);
         let admin_fee = two_pool::pool_admin_fee(&pool);
-        let amp = two_pool::a(pool);
+        let amp = two_pool::a(&pool);
 
-        let old_balances = balances(pool);
+        let old_balances = two_pool::pool_balances(&pool);
         let xp = xp_mem(old_balances, pool);
         let rates = two_pool::pool_rates(&pool);
 
@@ -405,10 +380,10 @@ module razor_stable_swap::two_pool_info {
         assert!(i < N_COINS && j < N_COINS && i != j, ERROR_INVALID_COIN_INDEX);
 
         let pool_fee = two_pool::pool_fee(&pool);
-        let old_balances = balances(pool);
+        let old_balances = two_pool::pool_balances(&pool);
         let xp = xp_mem(old_balances, pool);
         let rates = two_pool::pool_rates(&pool);
-        let amp = two_pool::a(pool);
+        let amp = two_pool::a(&pool);
 
         let dy_with_fee = (dy * FEE_DENOMINATOR) / (FEE_DENOMINATOR - pool_fee);
         assert!(dy_with_fee < *vector::borrow(&old_balances, j), ERROR_EXCESS_BALANCE);

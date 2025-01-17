@@ -12,14 +12,14 @@ module razor_stable_swap::three_pool {
     use aptos_framework::primary_fungible_store;
     use aptos_framework::timestamp;
 
-    use aptos_std::comparator;
-
     use razor_stable_swap::controller;
 
     use razor_libs::sort;
-
+    use razor_libs::token_utils;
+    use razor_libs::utils;
     friend razor_stable_swap::factory;
     friend razor_stable_swap::three_pool_info;
+    friend razor_stable_swap::stable_swap_info;
     friend razor_stable_swap::three_pool_deployer;
     friend razor_stable_swap::router;
 
@@ -227,7 +227,7 @@ module razor_stable_swap::three_pool {
         let token1 = *vector::borrow(&coins, 1);
         let token2 = *vector::borrow(&coins, 2);
 
-        if (!is_sorted(token0, token1, token2)) {
+        if (!sort::is_sorted_three(token0, token1, token2)) {
             return initialize(sort::sort_three_tokens_vector(token0, token1, token2), a, fee, admin_fee)
         };
         // Validate inputs
@@ -260,7 +260,7 @@ module razor_stable_swap::three_pool {
             vector::push_back(&mut rates, PRECISION * precision_mul);
 
             // Create a store for each coin
-            vector::push_back(&mut coin_stores, create_token_store(&pool_signer, *coin));
+            vector::push_back(&mut coin_stores, token_utils::create_token_store(&pool_signer, *coin));
             i = i + 1;
         };
 
@@ -367,7 +367,7 @@ module razor_stable_swap::three_pool {
     }
 
     public(friend) fun get_d(xp: &vector<u256>, amp: u256): u256 {
-        let sum_x = sum_vector(xp); // sum of all xp
+        let sum_x = utils::sum_vector(xp); // sum of all xp
         if (sum_x == 0) {
             return 0
         };
@@ -487,7 +487,7 @@ module razor_stable_swap::three_pool {
         let token2 = fungible_asset::metadata_from_asset(vector::borrow(&amounts, 2));
 
         // TODO: THOROUGHLY SCRUTINIZE THIS
-        if (!is_sorted(token0, token1, token2)) {
+        if (!sort::is_sorted_three(token0, token1, token2)) {
             let tokenPositions = sort::sort_tokens_position(token0, token1, token2);
             let sortedAmounts = vector::empty<FungibleAsset>();
             
@@ -775,7 +775,7 @@ module razor_stable_swap::three_pool {
     ): vector<FungibleAsset> acquires ThreePool {
         let pool_data = pool_data_mut<ThreePool>(pool);
         let pool_signer = &controller::get_signer();
-        let store = ensure_account_token_store(recipient, *pool);
+        let store = token_utils::ensure_account_token_store(recipient, *pool);
         
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
         assert!(vector::length(&amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
@@ -948,7 +948,7 @@ module razor_stable_swap::three_pool {
         let pool_data = pool_data_mut(pool);
         let pool_signer = &controller::get_signer();
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
-        let provider_coin_store = ensure_account_token_store(provider, *pool);
+        let provider_coin_store = token_utils::ensure_account_token_store(provider, *pool);
 
         assert!(dy >= min_amount, ERROR_INSUFFICIENT_COINS_REMOVED);
 
@@ -1253,16 +1253,6 @@ module razor_stable_swap::three_pool {
         borrow_global_mut<ThreePool>(object::object_address(pool))
     }
 
-    inline fun sum_vector(v: &vector<u256>): u256 {
-        let sum = 0u256;
-        let i = 0;
-        while (i < vector::length(v)) {
-            sum = sum + *vector::borrow(v, i);
-            i = i + 1;
-        };
-        sum
-    }
-
     inline fun create_lp_token(
         token0: Object<Metadata>,
         token1: Object<Metadata>,
@@ -1292,15 +1282,6 @@ module razor_stable_swap::three_pool {
         }
     }
 
-    fun ensure_account_token_store<T: key>(
-        account: address, 
-        pool: Object<T>
-    ): Object<FungibleStore> {
-        primary_fungible_store::ensure_primary_store_exists(account, pool);
-        let store = primary_fungible_store::primary_store(account, pool);
-        store
-    }
-
     inline fun lp_token_name(token0: Object<Metadata>, token1: Object<Metadata> ,token2: Object<Metadata>): String {
         let token_symbol = string::utf8(b"Razor ");
         string::append(&mut token_symbol, fungible_asset::symbol(token0));
@@ -1318,24 +1299,6 @@ module razor_stable_swap::three_pool {
         vector::append(&mut seeds, bcs::to_bytes(&object::object_address(&token1)));
         vector::append(&mut seeds, bcs::to_bytes(&object::object_address(&token2)));
         seeds
-    }
-
-    inline fun create_token_store(pool_signer: &signer, token: Object<Metadata>): Object<FungibleStore> {
-        let constructor_ref = &object::create_object_from_object(pool_signer);
-        fungible_asset::create_store(constructor_ref, token)
-    }
-
-    inline fun is_sorted(
-        token0: Object<Metadata>,
-        token1: Object<Metadata>,
-        token2: Object<Metadata>
-    ): bool {
-        let addr0 = object::object_address(&token0);
-        let addr1 = object::object_address(&token1);
-        let addr2 = object::object_address(&token2);
-
-        comparator::is_smaller_than(&comparator::compare(&addr0, &addr1)) &&
-        comparator::is_smaller_than(&comparator::compare(&addr1, &addr2))
     }
 
     #[view]
@@ -1374,7 +1337,7 @@ module razor_stable_swap::three_pool {
         token1: Object<Metadata>,
         token2: Object<Metadata>
     ): address {
-        if (!is_sorted(token0, token1, token2)) {
+        if (!sort::is_sorted_three(token0, token1, token2)) {
             let tokenVector = sort::sort_three_tokens_vector(token0, token1, token2);
             return pool_address(*vector::borrow(&tokenVector, 0), *vector::borrow(&tokenVector, 1), *vector::borrow(&tokenVector, 2))
         };

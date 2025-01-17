@@ -11,12 +11,15 @@ module razor_stable_swap::two_pool {
     use aptos_framework::primary_fungible_store;
     use aptos_framework::timestamp;
 
-    use aptos_std::comparator;
-
     use razor_stable_swap::controller;
+
+    use razor_libs::sort;
+    use razor_libs::token_utils;
+    use razor_libs::utils;
 
     friend razor_stable_swap::factory;
     friend razor_stable_swap::two_pool_info;
+    friend razor_stable_swap::stable_swap_info;
     friend razor_stable_swap::two_pool_deployer;
     friend razor_stable_swap::router;
 
@@ -223,7 +226,7 @@ module razor_stable_swap::two_pool {
         let token0 = *vector::borrow(&coins, 0);
         let token1 = *vector::borrow(&coins, 1);
 
-        if (!is_sorted(token0, token1)) {
+        if (!sort::is_sorted_two(token0, token1)) {
             vector::reverse(&mut coins);
             return initialize(coins, a, fee, admin_fee)
         };
@@ -257,7 +260,7 @@ module razor_stable_swap::two_pool {
             vector::push_back(&mut rates, PRECISION * precision_mul);
 
             // Create a store for each coin
-            vector::push_back(&mut coin_stores, create_token_store(&pool_signer, *coin));
+            vector::push_back(&mut coin_stores, token_utils::create_token_store(&pool_signer, *coin));
             i = i + 1;
         };
 
@@ -314,9 +317,8 @@ module razor_stable_swap::two_pool {
         }
     }
 
-    #[view]
-    public fun a(pool: Object<TwoPool>): u256 acquires TwoPool {
-        let pool_data = pool_data<TwoPool>(&pool);
+    public(friend) fun a(pool: &Object<TwoPool>): u256 acquires TwoPool {
+        let pool_data = pool_data<TwoPool>(pool);
         let t1 = pool_data.future_a_time;
         let a1 = pool_data.future_a;
 
@@ -364,7 +366,7 @@ module razor_stable_swap::two_pool {
     }
 
     public(friend) fun get_d(xp: &vector<u256>, amp: u256): u256 {
-        let sum_x = sum_vector(xp); // sum of all xp
+        let sum_x = utils::sum_vector(xp); // sum of all xp
         if (sum_x == 0) {
             return 0
         };
@@ -483,7 +485,7 @@ module razor_stable_swap::two_pool {
         let token1 = fungible_asset::metadata_from_asset(vector::borrow(&amounts, 1));
 
         // TODO: THOROUGHLY SCRUTINIZE THIS
-        if (!is_sorted(token0, token1)) {
+        if (!sort::is_sorted_two(token0, token1)) {
             vector::reverse(&mut amounts);
             return add_liquidity(pool, amounts, min_mint_amount, sender)
         };
@@ -761,7 +763,7 @@ module razor_stable_swap::two_pool {
     ): vector<FungibleAsset> acquires TwoPool {
         let pool_data = pool_data_mut<TwoPool>(pool);
         let pool_signer = &controller::get_signer();
-        let store = ensure_account_token_store(recipient, *pool);
+        let store = token_utils::ensure_account_token_store(recipient, *pool);
         
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
         assert!(vector::length(&amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
@@ -933,7 +935,7 @@ module razor_stable_swap::two_pool {
         let pool_data = pool_data_mut(pool);
         let pool_signer = &controller::get_signer();
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
-        let provider_coin_store = ensure_account_token_store(provider, *pool);
+        let provider_coin_store = token_utils::ensure_account_token_store(provider, *pool);
 
         assert!(dy >= min_amount, ERROR_INSUFFICIENT_COINS_REMOVED);
 
@@ -1240,16 +1242,6 @@ module razor_stable_swap::two_pool {
         borrow_global_mut<TwoPool>(object::object_address(pool))
     }
 
-    inline fun sum_vector(v: &vector<u256>): u256 {
-        let sum = 0u256;
-        let i = 0;
-        while (i < vector::length(v)) {
-            sum = sum + *vector::borrow(v, i);
-            i = i + 1;
-        };
-        sum
-    }
-
     inline fun create_lp_token(
         token0: Object<Metadata>,
         token1: Object<Metadata>
@@ -1278,15 +1270,6 @@ module razor_stable_swap::two_pool {
         }
     }
 
-    fun ensure_account_token_store<T: key>(
-        account: address, 
-        pool: Object<T>
-    ): Object<FungibleStore> {
-        primary_fungible_store::ensure_primary_store_exists(account, pool);
-        let store = primary_fungible_store::primary_store(account, pool);
-        store
-    }
-
     inline fun lp_token_name(token0: Object<Metadata>, token1: Object<Metadata>): String {
         let token_symbol = string::utf8(b"Razor ");
         string::append(&mut token_symbol, fungible_asset::symbol(token0));
@@ -1303,17 +1286,6 @@ module razor_stable_swap::two_pool {
         seeds
     }
 
-    inline fun create_token_store(pool_signer: &signer, token: Object<Metadata>): Object<FungibleStore> {
-        let constructor_ref = &object::create_object_from_object(pool_signer);
-        fungible_asset::create_store(constructor_ref, token)
-    }
-
-    inline fun is_sorted(token0: Object<Metadata>, token1: Object<Metadata>): bool {
-        let token0_addr = object::object_address(&token0);
-        let token1_addr = object::object_address(&token1);
-        comparator::is_smaller_than(&comparator::compare(&token0_addr, &token1_addr))
-    }
-
     #[view]
     public fun lp_balance_of<T: key>(account: address, pool: Object<T>): u64 {
         primary_fungible_store::balance(account, pool)
@@ -1325,7 +1297,7 @@ module razor_stable_swap::two_pool {
         (pool.token0, pool.token1)
     }
 
-      #[view]
+    #[view]
     public fun stable_swap_pool(
         token0: Object<Metadata>,
         token1: Object<Metadata>
@@ -1347,7 +1319,7 @@ module razor_stable_swap::two_pool {
         token0: Object<Metadata>,
         token1: Object<Metadata>
     ): address {
-        if (!is_sorted(token0, token1)) {
+        if (!sort::is_sorted_two(token0, token1)) {
             return pool_address(token1, token0)
         };
         object::create_object_address(&@razor_stable_swap, get_pool_seeds(token0, token1))

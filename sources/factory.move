@@ -41,9 +41,9 @@ module razor_stable_swap::factory {
   #[event]
   struct NewStableSwapPairEvent has drop, store {
     swap_contract: address,
-    tokenA: address,
-    tokenB: address,
-    tokenC: address,
+    token_a: address,
+    token_b: address,
+    token_c: address,
     lp_token: address
   }
 
@@ -69,16 +69,16 @@ module razor_stable_swap::factory {
 
   public entry fun create_swap_pair(
     sender: &signer,
-    tokenA: address,
-    tokenB: address,
+    token_a: address,
+    token_b: address,
     a: u256,
     fee: u256,
     admin_fee: u256
   ) acquires StableSwapFactory {
     controller::assert_admin(sender);
-    let tokenA_object = object::address_to_object<Metadata>(tokenA);
-    let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let (t0, t1) = sort::sort_two_tokens(tokenA_object, tokenB_object);
+    let token_a_object = object::address_to_object<Metadata>(token_a);
+    let token_b_object = object::address_to_object<Metadata>(token_b);
+    let (t0, t1) = sort::sort_two_tokens(token_a_object, token_b_object);
     let lp = two_pool_deployer::create_swap_pair(t0, t1, a, fee, admin_fee);
     let lp_address = object::object_address(&lp);
     add_pair_info_internal(
@@ -92,18 +92,18 @@ module razor_stable_swap::factory {
 
   public entry fun create_three_pool_pair(
     sender: &signer,
-    tokenA: address,
-    tokenB: address,
-    tokenC: address,
+    token_a: address,
+    token_b: address,
+    token_c: address,
     a: u256,
     fee: u256,
     admin_fee: u256
   ) acquires StableSwapFactory {
     controller::assert_admin(sender);
-    let tokenA_object = object::address_to_object<Metadata>(tokenA);
-    let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let tokenC_object = object::address_to_object<Metadata>(tokenC);
-    let (t0, t1, t2) = sort::sort_three_tokens(tokenA_object, tokenB_object, tokenC_object);
+    let token_a_object = object::address_to_object<Metadata>(token_a);
+    let token_b_object = object::address_to_object<Metadata>(token_b);
+    let token_c_object = object::address_to_object<Metadata>(token_c);
+    let (t0, t1, t2) = sort::sort_three_tokens(token_a_object, token_b_object, token_c_object);
     let lp = three_pool_deployer::create_swap_pair(t0, t1, t2, a, fee, admin_fee);
     let lp_address = object::object_address(&lp);
     add_pair_info_internal(
@@ -142,9 +142,9 @@ module razor_stable_swap::factory {
 
     event::emit(NewStableSwapPairEvent {
       swap_contract: swap_contract,
-      tokenA: t0,
-      tokenB: t1,
-      tokenC: t2,
+      token_a: t0,
+      token_b: t1,
+      token_c: t2,
       lp_token: lp
     })
   }
@@ -198,10 +198,10 @@ module razor_stable_swap::factory {
   }
 
   #[view]
-  public fun get_pair_info(tokenA: address, tokenB: address): StableSwapPairInfo  acquires StableSwapFactory {
-    let tokenA_object = object::address_to_object<Metadata>(tokenA);
-    let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let (t0, t1) = sort::sort_two_tokens(tokenA_object, tokenB_object);
+  public fun get_pair_info(token_a: address, token_b: address): StableSwapPairInfo  acquires StableSwapFactory {
+    let token_a_object = object::address_to_object<Metadata>(token_a);
+    let token_b_object = object::address_to_object<Metadata>(token_b);
+    let (t0, t1) = sort::sort_two_tokens(token_a_object, token_b_object);
     let factory = borrow_global<StableSwapFactory>(@razor_stable_swap);
     let map = *simple_map::borrow(&factory.stable_swap_pair_info, &object::object_address(&t0));
     let map_inner = *simple_map::borrow(&map, &object::object_address(&t1));
@@ -229,10 +229,10 @@ module razor_stable_swap::factory {
   }
 
   #[view]
-  public fun get_three_pool_pair_info(tokenA: address, tokenB: address): StableSwapThreePoolPairInfo  acquires StableSwapFactory {
-    let tokenA_object = object::address_to_object<Metadata>(tokenA);
-    let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let (t0, t1) = sort::sort_two_tokens(tokenA_object, tokenB_object);
+  public fun get_three_pool_pair_info(token_a: address, token_b: address): StableSwapThreePoolPairInfo  acquires StableSwapFactory {
+    let token_a_object = object::address_to_object<Metadata>(token_a);
+    let token_b_object = object::address_to_object<Metadata>(token_b);
+    let (t0, t1) = sort::sort_two_tokens(token_a_object, token_b_object);
     let factory = borrow_global<StableSwapFactory>(@razor_stable_swap);
     let map = *simple_map::borrow(&factory.three_pool_info, &object::object_address(&t0));
     let info = *simple_map::borrow(&map, &object::object_address(&t1));

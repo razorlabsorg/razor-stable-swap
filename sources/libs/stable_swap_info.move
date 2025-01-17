@@ -3,10 +3,12 @@ module razor_stable_swap::stable_swap_info {
 
   use aptos_framework::object;
 
-  use razor_stable_swap::two_pool::{TwoPool};
-  use razor_stable_swap::three_pool::{ThreePool};
+  use razor_stable_swap::two_pool::{Self, TwoPool};
+  use razor_stable_swap::three_pool::{Self, ThreePool};
   use razor_stable_swap::two_pool_info;
   use razor_stable_swap::three_pool_info;
+
+  const FEE_DENOMINATOR: u256 = 10000000000; // 1e10
 
   fun num_coins(swap: address): u64 {
     if (object::object_exists<TwoPool>(swap)) {
@@ -19,15 +21,8 @@ module razor_stable_swap::stable_swap_info {
   }
 
   #[view]
-  public fun fee_denominator(swap_address: address): u256 {
-    let n_coins = num_coins(swap_address);
-    if (n_coins == 2) {
-      two_pool_info::fee_denominator()
-    } else if (n_coins == 3) {
-      three_pool_info::fee_denominator()
-    } else {
-      0
-    }
+  public fun fee_denominator(): u256 {
+    FEE_DENOMINATOR
   }
 
   #[view]
@@ -35,10 +30,10 @@ module razor_stable_swap::stable_swap_info {
     let n_coins = num_coins(lp_token_address);
     if (n_coins == 2) {
       let pool = object::address_to_object<TwoPool>(lp_token_address);
-      two_pool_info::lp_token_supply(pool)
+      two_pool::lp_token_supply(pool)
     } else if (n_coins == 3) {
       let pool = object::address_to_object<ThreePool>(lp_token_address);
-      three_pool_info::lp_token_supply(pool)
+      three_pool::lp_token_supply(pool)
     } else {
       0
     }
@@ -49,10 +44,10 @@ module razor_stable_swap::stable_swap_info {
     let n_coins = num_coins(swap_address);
     if (n_coins == 2) {
       let pool = object::address_to_object<TwoPool>(swap_address);
-      two_pool_info::fee(pool)
+      two_pool::fee(&pool)
     } else if (n_coins == 3) {
       let pool = object::address_to_object<ThreePool>(swap_address);
-      three_pool_info::fee(pool)
+      three_pool::fee(&pool)
     } else {
       0
     }
@@ -155,10 +150,10 @@ module razor_stable_swap::stable_swap_info {
     let n_coins = num_coins(swap_address);
     if (n_coins == 2) {
       let pool = object::address_to_object<TwoPool>(swap_address);
-      two_pool_info::balances(pool)
+      two_pool::pool_balances(&pool)
     } else if (n_coins == 3) {
       let pool = object::address_to_object<ThreePool>(swap_address);
-      three_pool_info::balances(pool)
+      three_pool::pool_balances(&pool)
     } else {
       vector::empty<u256>()
     }
@@ -169,10 +164,10 @@ module razor_stable_swap::stable_swap_info {
     let n_coins = num_coins(swap_address);
     if (n_coins == 2) {
       let pool = object::address_to_object<TwoPool>(swap_address);
-      two_pool_info::a(pool)
+      two_pool::a(&pool)
     } else if (n_coins == 3) {
       let pool = object::address_to_object<ThreePool>(swap_address);
-      three_pool_info::a(pool)
+      three_pool::a(&pool)
     } else {
       0
     }

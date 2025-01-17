@@ -3,7 +3,7 @@ module razor_stable_swap::router {
     use std::vector;
     use std::signer;
     use aptos_framework::object::{Self, Object};
-    use aptos_framework::fungible_asset::{Self, FungibleAsset, FungibleStore, Metadata};
+    use aptos_framework::fungible_asset::{Self, FungibleAsset, Metadata};
     use aptos_framework::primary_fungible_store;
     use aptos_framework::dispatchable_fungible_asset;
 
@@ -11,7 +11,7 @@ module razor_stable_swap::router {
     use razor_stable_swap::two_pool::{Self, TwoPool};
     use razor_stable_swap::router_helper;
 
-    use razor_libs::utils;
+    use razor_libs::token_utils;
 
     const TWO: u64 = 2;
     const THREE: u64 = 3;
@@ -29,11 +29,6 @@ module razor_stable_swap::router {
         } else {
             0
         }
-    }
-
-    fun fungible_store_to_metadata(store: Object<FungibleStore>): Object<Metadata> {
-        let metadata = fungible_asset::store_metadata(store);
-        metadata
     }
 
     inline fun add_liquidity_three(
@@ -58,7 +53,7 @@ module razor_stable_swap::router {
 
         let lp_tokens = three_pool::add_liquidity(pool, token_vector, min_mint_amount, sender);
 
-        let coin_store = utils::ensure_account_token_store(sender_addr, pool);
+        let coin_store = token_utils::ensure_account_token_store(sender_addr, pool);
 
         dispatchable_fungible_asset::deposit(coin_store, lp_tokens);
     }
@@ -84,7 +79,7 @@ module razor_stable_swap::router {
 
         let lp_tokens = two_pool::add_liquidity(pool, token_vector, min_mint_amount, sender);
 
-        let coin_store = utils::ensure_account_token_store(sender_addr, pool);
+        let coin_store = token_utils::ensure_account_token_store(sender_addr, pool);
 
         dispatchable_fungible_asset::deposit(coin_store, lp_tokens);
     }
