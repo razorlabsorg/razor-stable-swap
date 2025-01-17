@@ -15,7 +15,8 @@ module razor_stable_swap::three_pool {
     use aptos_std::comparator;
 
     use razor_stable_swap::controller;
-    use razor_stable_swap::swap_library;
+
+    use razor_libs::sort;
 
     friend razor_stable_swap::factory;
     friend razor_stable_swap::three_pool_info;
@@ -227,7 +228,7 @@ module razor_stable_swap::three_pool {
         let token2 = *vector::borrow(&coins, 2);
 
         if (!is_sorted(token0, token1, token2)) {
-            return initialize(swap_library::sort_tokens_three(token0, token1, token2), a, fee, admin_fee)
+            return initialize(sort::sort_three_tokens_vector(token0, token1, token2), a, fee, admin_fee)
         };
         // Validate inputs
         assert!(a > 0 && a <= MAX_A, ERROR_INVALID_A);
@@ -487,7 +488,7 @@ module razor_stable_swap::three_pool {
 
         // TODO: THOROUGHLY SCRUTINIZE THIS
         if (!is_sorted(token0, token1, token2)) {
-            let tokenPositions = swap_library::sort_tokens_position(token0, token1, token2);
+            let tokenPositions = sort::sort_tokens_position(token0, token1, token2);
             let sortedAmounts = vector::empty<FungibleAsset>();
             
             // Use the positions to create the sorted vector
@@ -1252,51 +1253,6 @@ module razor_stable_swap::three_pool {
         borrow_global_mut<ThreePool>(object::object_address(pool))
     }
 
-    inline fun sort_tokens_position(
-        token0: Object<Metadata>,
-        token1: Object<Metadata>,
-        token2: Object<Metadata>
-    ): vector<u64> {
-        let sorted = vector::empty<u64>();
-        let addr0 = object::object_address(&token0);
-        let addr1 = object::object_address(&token1);
-        let addr2 = object::object_address(&token2);
-
-        if (comparator::is_smaller_than(&comparator::compare(&addr0, &addr1))) {
-            if (comparator::is_smaller_than(&comparator::compare(&addr1, &addr2))) {
-                vector::push_back(&mut sorted, 0);
-                vector::push_back(&mut sorted, 1);
-                vector::push_back(&mut sorted, 2);
-            } else if (comparator::is_smaller_than(&comparator::compare(&addr0, &addr2))) {
-                vector::push_back(&mut sorted, 0);
-                vector::push_back(&mut sorted, 2);
-                vector::push_back(&mut sorted, 1);
-            } else {
-                vector::push_back(&mut sorted, 2);
-                vector::push_back(&mut sorted, 0);
-                vector::push_back(&mut sorted, 1);
-            }
-        } else {
-            if (comparator::is_smaller_than(&comparator::compare(&addr1, &addr2))) {
-                if (comparator::is_smaller_than(&comparator::compare(&addr0, &addr2))) {
-                    vector::push_back(&mut sorted, 1);
-                    vector::push_back(&mut sorted, 0);
-                    vector::push_back(&mut sorted, 2);
-                } else {
-                    vector::push_back(&mut sorted, 1);
-                    vector::push_back(&mut sorted, 2);
-                    vector::push_back(&mut sorted, 0);
-                }
-            } else {
-                vector::push_back(&mut sorted, 2);
-                vector::push_back(&mut sorted, 1);
-                vector::push_back(&mut sorted, 0);
-            }
-        };
-
-        sorted
-    }
-
     inline fun sum_vector(v: &vector<u256>): u256 {
         let sum = 0u256;
         let i = 0;
@@ -1419,7 +1375,7 @@ module razor_stable_swap::three_pool {
         token2: Object<Metadata>
     ): address {
         if (!is_sorted(token0, token1, token2)) {
-            let tokenVector = swap_library::sort_tokens_three(token0, token1, token2);
+            let tokenVector = sort::sort_three_tokens_vector(token0, token1, token2);
             return pool_address(*vector::borrow(&tokenVector, 0), *vector::borrow(&tokenVector, 1), *vector::borrow(&tokenVector, 2))
         };
         object::create_object_address(&@razor_stable_swap, get_pool_seeds(token0, token1, token2))

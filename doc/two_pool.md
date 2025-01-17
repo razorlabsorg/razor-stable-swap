@@ -257,6 +257,15 @@
 ## Constants
 
 
+<a id="0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_two_pool_MAX_FEE"></a>
+
+
+
+<pre><code><b>const</b> <a href="two_pool.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_two_pool_MAX_FEE">MAX_FEE</a>: u256 = 5000000000;
+</code></pre>
+
+
+
 <a id="0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_two_pool_ADMIN_ACTIONS_DELAY"></a>
 
 
@@ -655,15 +664,6 @@ Total supply is zero
 
 
 <pre><code><b>const</b> <a href="two_pool.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_two_pool_MAX_DECIMAL">MAX_DECIMAL</a>: u8 = 18;
-</code></pre>
-
-
-
-<a id="0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_two_pool_MAX_FEE"></a>
-
-
-
-<pre><code><b>const</b> <a href="two_pool.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_two_pool_MAX_FEE">MAX_FEE</a>: u256 = 5000000000;
 </code></pre>
 
 

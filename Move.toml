@@ -5,13 +5,14 @@ authors = []
 
 [addresses]
 razor_stable_swap = "_"
-admin = "0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839"
-fee_admin = "0x4b1bf00e6b8dc4a7bc00f9dc02e5da424236afad275c8833b48c54b0496fd283"
+admin = "0x0133e0a39bdfcf5bbde2b1f4def9f36b2842693345ccc49d6aa6f2ee8c7ccf9a"
+fee_admin = "0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839"
+razor_libs = "0x8db41aabd74a67d027c7c337de314f085f7ec1e1a2985c500102d746407e723e"
 
 [dev-addresses]
 
 [dependencies]
 AptosFramework = {git = 'https://github.com/aptos-labs/aptos-core.git',rev='main',subdir = 'aptos-move/framework/aptos-framework'}
 AptosStdlib = {git = 'https://github.com/aptos-labs/aptos-core.git',rev='main',subdir = 'aptos-move/framework/aptos-stdlib'}
-
+RazorLibs = {git = 'https://github.com/razorlabsorg/razor-libs.git',rev='main'}
 [dev-dependencies]

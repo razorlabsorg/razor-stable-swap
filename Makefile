@@ -21,11 +21,12 @@ compile:
 	aptos move compile \
 	--skip-fetch-latest-git-deps \
 	--included-artifacts none \
-	--save-metadata \
+	--move-2 \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)"
 
 test:
 	aptos move test \
+	--move-2 \
 	--skip-fetch-latest-git-deps \
 	--ignore-compile-warnings \
 	--skip-attribute-checks \
@@ -34,6 +35,7 @@ test:
 
 publish:
 	aptos move deploy-object \
+	--move-2 \
 	--skip-fetch-latest-git-deps \
 	--included-artifacts none \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)" \
@@ -41,6 +43,7 @@ publish:
 
 upgrade:
 	aptos move upgrade-object \
+	--move-2 \
 	--skip-fetch-latest-git-deps \
 	--address-name razor_stable_swap \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)" \
@@ -48,6 +51,7 @@ upgrade:
 
 docs:
 	aptos move document \
+	--move-2 \
 	--skip-fetch-latest-git-deps \
 	--skip-attribute-checks \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)"

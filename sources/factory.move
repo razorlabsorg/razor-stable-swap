@@ -1,9 +1,8 @@
 module razor_stable_swap::factory {
-  use aptos_std::comparator;
   use aptos_std::simple_map::{Self, SimpleMap};
 
   use aptos_framework::event;
-  use aptos_framework::object::{Self, Object};
+  use aptos_framework::object;
   use aptos_framework::fungible_asset::Metadata;
 
   use razor_stable_swap::controller;
@@ -11,6 +10,8 @@ module razor_stable_swap::factory {
   use razor_stable_swap::three_pool::{Self, ThreePool};
   use razor_stable_swap::two_pool_deployer;
   use razor_stable_swap::three_pool_deployer;
+
+  use razor_libs::sort;
 
   /// Identical Addresses
   const ERROR_IDENTICAL_ADDRESSES: u64 = 1;
@@ -64,57 +65,7 @@ module razor_stable_swap::factory {
   public fun is_initialized(): bool {
     exists<StableSwapFactory>(@razor_stable_swap)
   }
-
-  fun is_sorted(token0: Object<Metadata>, token1: Object<Metadata>): bool {
-    let token0_addr = object::object_address(&token0);
-    let token1_addr = object::object_address(&token1);
-    comparator::is_smaller_than(&comparator::compare(&token0_addr, &token1_addr))
-  }
-
-  fun sort_two_tokens(
-    tokenA: Object<Metadata>,
-    tokenB: Object<Metadata>,
-  ): (Object<Metadata>, Object<Metadata>) {
-    let tokenA_addr = object::object_address(&tokenA);
-    let tokenB_addr = object::object_address(&tokenB);
-    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
-    let (token0, token1);
-    if (is_sorted(tokenA, tokenB)) {
-      (token0, token1) = (tokenA, tokenB)
-    } else {
-      (token0, token1) = (tokenB, tokenA)
-    };
-
-    (token0, token1)
-  }
-
-  fun sort_three_tokens(
-    tokenA: Object<Metadata>,
-    tokenB: Object<Metadata>,
-    tokenC: Object<Metadata>,
-  ): (Object<Metadata>, Object<Metadata>, Object<Metadata>) {
-    let tokenA_addr = object::object_address(&tokenA);
-    let tokenB_addr = object::object_address(&tokenB);
-    let tokenC_addr = object::object_address(&tokenC);
-    assert!(tokenA_addr != tokenB_addr, ERROR_IDENTICAL_ADDRESSES);
-    assert!(tokenA_addr != tokenC_addr, ERROR_IDENTICAL_ADDRESSES);
-    assert!(tokenB_addr != tokenC_addr, ERROR_IDENTICAL_ADDRESSES);
-    let (token0, token1, token2);
-    if (is_sorted(tokenA, tokenB)) {
-      if (is_sorted(tokenB, tokenC)) {
-        (token0, token1, token2) = (tokenA, tokenB, tokenC)
-      } else {
-        (token0, token1, token2) = (tokenA, tokenC, tokenB)
-      }
-    } else {
-      if (is_sorted(tokenB, tokenC)) {
-        (token0, token1, token2) = (tokenB, tokenA, tokenC)
-      } else {
-        (token0, token1, token2) = (tokenB, tokenC, tokenA)
-      }
-    };
-    (token0, token1, token2)
-  }
+  
 
   public entry fun create_swap_pair(
     sender: &signer,
@@ -127,7 +78,7 @@ module razor_stable_swap::factory {
     controller::assert_admin(sender);
     let tokenA_object = object::address_to_object<Metadata>(tokenA);
     let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let (t0, t1) = sort_two_tokens(tokenA_object, tokenB_object);
+    let (t0, t1) = sort::sort_two_tokens(tokenA_object, tokenB_object);
     let lp = two_pool_deployer::create_swap_pair(t0, t1, a, fee, admin_fee);
     let lp_address = object::object_address(&lp);
     add_pair_info_internal(
@@ -152,7 +103,7 @@ module razor_stable_swap::factory {
     let tokenA_object = object::address_to_object<Metadata>(tokenA);
     let tokenB_object = object::address_to_object<Metadata>(tokenB);
     let tokenC_object = object::address_to_object<Metadata>(tokenC);
-    let (t0, t1, t2) = sort_three_tokens(tokenA_object, tokenB_object, tokenC_object);
+    let (t0, t1, t2) = sort::sort_three_tokens(tokenA_object, tokenB_object, tokenC_object);
     let lp = three_pool_deployer::create_swap_pair(t0, t1, t2, a, fee, admin_fee);
     let lp_address = object::object_address(&lp);
     add_pair_info_internal(
@@ -250,7 +201,7 @@ module razor_stable_swap::factory {
   public fun get_pair_info(tokenA: address, tokenB: address): StableSwapPairInfo  acquires StableSwapFactory {
     let tokenA_object = object::address_to_object<Metadata>(tokenA);
     let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let (t0, t1) = sort_two_tokens(tokenA_object, tokenB_object);
+    let (t0, t1) = sort::sort_two_tokens(tokenA_object, tokenB_object);
     let factory = borrow_global<StableSwapFactory>(@razor_stable_swap);
     let map = *simple_map::borrow(&factory.stable_swap_pair_info, &object::object_address(&t0));
     let map_inner = *simple_map::borrow(&map, &object::object_address(&t1));
@@ -281,7 +232,7 @@ module razor_stable_swap::factory {
   public fun get_three_pool_pair_info(tokenA: address, tokenB: address): StableSwapThreePoolPairInfo  acquires StableSwapFactory {
     let tokenA_object = object::address_to_object<Metadata>(tokenA);
     let tokenB_object = object::address_to_object<Metadata>(tokenB);
-    let (t0, t1) = sort_two_tokens(tokenA_object, tokenB_object);
+    let (t0, t1) = sort::sort_two_tokens(tokenA_object, tokenB_object);
     let factory = borrow_global<StableSwapFactory>(@razor_stable_swap);
     let map = *simple_map::borrow(&factory.three_pool_info, &object::object_address(&t0));
     let info = *simple_map::borrow(&map, &object::object_address(&t1));

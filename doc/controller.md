@@ -48,7 +48,7 @@
 
 
 
-<pre><code><b>const</b> <a href="controller.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_controller_ADMIN">ADMIN</a>: <b>address</b> = 0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839;
+<pre><code><b>const</b> <a href="controller.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_controller_ADMIN">ADMIN</a>: <b>address</b> = 0x133e0a39bdfcf5bbde2b1f4def9f36b2842693345ccc49d6aa6f2ee8c7ccf9a;
 </code></pre>
 
 
@@ -117,7 +117,7 @@ Contract is needs to be paused first
 
 
 
-<pre><code><b>const</b> <a href="controller.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_controller_FEE_ADMIN">FEE_ADMIN</a>: <b>address</b> = 0x4b1bf00e6b8dc4a7bc00f9dc02e5da424236afad275c8833b48c54b0496fd283;
+<pre><code><b>const</b> <a href="controller.md#0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839_controller_FEE_ADMIN">FEE_ADMIN</a>: <b>address</b> = 0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839;
 </code></pre>
 
 
