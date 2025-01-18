@@ -8,7 +8,7 @@ module razor_stable_swap::two_pool_deployer {
 
   use razor_libs::sort;
 
-  friend razor_stable_swap::factory;
+  friend razor_stable_swap::stable_swap_factory;
 
   public(friend) fun create_swap_pair(
     token0: Object<Metadata>,

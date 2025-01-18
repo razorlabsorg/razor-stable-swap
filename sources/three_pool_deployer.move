@@ -8,7 +8,7 @@ module razor_stable_swap::three_pool_deployer {
 
   use razor_libs::sort;
 
-  friend razor_stable_swap::factory;
+  friend razor_stable_swap::stable_swap_factory;
 
   const N_COINS: u64 = 3;
 

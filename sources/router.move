@@ -1,4 +1,4 @@
-module razor_stable_swap::router {
+module razor_stable_swap::stable_swap_router {
 
     use std::vector;
     use std::signer;

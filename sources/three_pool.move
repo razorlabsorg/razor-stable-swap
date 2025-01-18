@@ -12,16 +12,17 @@ module razor_stable_swap::three_pool {
     use aptos_framework::primary_fungible_store;
     use aptos_framework::timestamp;
 
-    use razor_stable_swap::controller;
+    use razor_stable_swap::stable_swap_controller;
 
     use razor_libs::sort;
     use razor_libs::token_utils;
     use razor_libs::utils;
-    friend razor_stable_swap::factory;
+
+    friend razor_stable_swap::stable_swap_factory;
     friend razor_stable_swap::three_pool_info;
     friend razor_stable_swap::stable_swap_info;
     friend razor_stable_swap::three_pool_deployer;
-    friend razor_stable_swap::router;
+    friend razor_stable_swap::stable_swap_router;
 
     // Constants
     const N_COINS: u64 = 3;
@@ -670,7 +671,7 @@ module razor_stable_swap::three_pool {
         sender: &signer,
     ): FungibleAsset acquires ThreePool {
         let pool_data = pool_data_mut<ThreePool>(pool);
-        let pool_signer = &controller::get_signer();
+        let pool_signer = &stable_swap_controller::get_signer();
         
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
         assert!(i != j && i < N_COINS && j < N_COINS, ERROR_INVALID_COIN_INDEX);
@@ -726,7 +727,7 @@ module razor_stable_swap::three_pool {
     ): vector<FungibleAsset> acquires ThreePool {
 
         let pool_data = pool_data_mut<ThreePool>(pool);
-        let pool_signer = &controller::get_signer();
+        let pool_signer = &stable_swap_controller::get_signer();
         
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
         assert!(vector::length(&min_amounts) == N_COINS, ERROR_INVALID_AMOUNTS);
@@ -774,7 +775,7 @@ module razor_stable_swap::three_pool {
         recipient: address,
     ): vector<FungibleAsset> acquires ThreePool {
         let pool_data = pool_data_mut<ThreePool>(pool);
-        let pool_signer = &controller::get_signer();
+        let pool_signer = &stable_swap_controller::get_signer();
         let store = token_utils::ensure_account_token_store(recipient, *pool);
         
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
@@ -946,7 +947,7 @@ module razor_stable_swap::three_pool {
         let (dy, dy_fee) = calc_withdraw_one_coin_internal(pool, token_amount, i);
 
         let pool_data = pool_data_mut(pool);
-        let pool_signer = &controller::get_signer();
+        let pool_signer = &stable_swap_controller::get_signer();
         assert!(!pool_data.is_killed, ERROR_POOL_IS_KILLED);
         let provider_coin_store = token_utils::ensure_account_token_store(provider, *pool);
 
@@ -973,7 +974,7 @@ module razor_stable_swap::three_pool {
 
     public(friend) fun ramp_a(admin: &signer, future_a: u256, future_time: u256, pool: &Object<ThreePool>) acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let now = timestamp::now_seconds();
         let pool_data = pool_data_mut(pool);
@@ -1011,7 +1012,7 @@ module razor_stable_swap::three_pool {
 
     public(friend) fun stop_rampget_a(admin: &signer, pool: &Object<ThreePool>) acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
         let current_a = get_a(pool_data);
@@ -1032,7 +1033,7 @@ module razor_stable_swap::three_pool {
         new_admin_fee: u256
     ) acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
 
@@ -1060,7 +1061,7 @@ module razor_stable_swap::three_pool {
         pool: &Object<ThreePool>
     ) acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
 
@@ -1082,7 +1083,7 @@ module razor_stable_swap::three_pool {
 
     public(friend) fun revert_new_parameters(admin: &signer, pool: &Object<ThreePool>) acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
         pool_data.admin_actions_deadline = 0;
@@ -1094,10 +1095,10 @@ module razor_stable_swap::three_pool {
         pool: &Object<ThreePool>
     ): vector<FungibleAsset> acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
-        let pool_signer = &controller::get_signer();
+        let pool_signer = &stable_swap_controller::get_signer();
 
         let withdrawn_assets = vector::empty<FungibleAsset>();
         let withdrawn_amounts = vector::empty<u256>();
@@ -1134,7 +1135,7 @@ module razor_stable_swap::three_pool {
         pool: &Object<ThreePool>
     ) acquires ThreePool {
 
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
 
@@ -1155,7 +1156,7 @@ module razor_stable_swap::three_pool {
         admin: &signer,
         pool: &Object<ThreePool>
     ) acquires ThreePool {
-        controller::assert_admin(admin);
+        stable_swap_controller::assert_admin(admin);
 
         let pool_data = pool_data_mut(pool);
 
@@ -1260,7 +1261,7 @@ module razor_stable_swap::three_pool {
     ): &ConstructorRef {
         let token_name = lp_token_name(token0, token1, token2);
         let seeds = get_pool_seeds(token0, token1, token2);
-        let lp_token_constructor_ref = &object::create_named_object(&controller::get_signer(), seeds);
+        let lp_token_constructor_ref = &object::create_named_object(&stable_swap_controller::get_signer(), seeds);
         primary_fungible_store::create_primary_store_enabled_fungible_asset(
         lp_token_constructor_ref,
         option::none(),

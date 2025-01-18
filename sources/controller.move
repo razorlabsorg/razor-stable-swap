@@ -1,12 +1,12 @@
 // This module is responsible for housekeeping
-module razor_stable_swap::controller {
+module razor_stable_swap::stable_swap_controller {
   use std::signer;
 
   use aptos_framework::object::{Self, ExtendRef};
 
   friend razor_stable_swap::three_pool;
   friend razor_stable_swap::two_pool;
-  friend razor_stable_swap::factory;
+  friend razor_stable_swap::stable_swap_factory;
 
   const FEE_ADMIN: address = @fee_admin;
   const ADMIN: address = @admin;

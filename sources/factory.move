@@ -1,11 +1,11 @@
-module razor_stable_swap::factory {
+module razor_stable_swap::stable_swap_factory {
   use aptos_std::simple_map::{Self, SimpleMap};
 
   use aptos_framework::event;
   use aptos_framework::object;
   use aptos_framework::fungible_asset::Metadata;
 
-  use razor_stable_swap::controller;
+  use razor_stable_swap::stable_swap_controller;
   use razor_stable_swap::two_pool::{Self, TwoPool};
   use razor_stable_swap::three_pool::{Self, ThreePool};
   use razor_stable_swap::two_pool_deployer;
@@ -52,7 +52,7 @@ module razor_stable_swap::factory {
       return
     };
 
-    let pool_signer = &controller::get_signer();
+    let pool_signer = &stable_swap_controller::get_signer();
     move_to(pool_signer, StableSwapFactory {
       stable_swap_pair_info: simple_map::new(),
       three_pool_info: simple_map::new(),
@@ -75,7 +75,7 @@ module razor_stable_swap::factory {
     fee: u256,
     admin_fee: u256
   ) acquires StableSwapFactory {
-    controller::assert_admin(sender);
+    stable_swap_controller::assert_admin(sender);
     let token_a_object = object::address_to_object<Metadata>(token_a);
     let token_b_object = object::address_to_object<Metadata>(token_b);
     let (t0, t1) = sort::sort_two_tokens(token_a_object, token_b_object);
@@ -99,7 +99,7 @@ module razor_stable_swap::factory {
     fee: u256,
     admin_fee: u256
   ) acquires StableSwapFactory {
-    controller::assert_admin(sender);
+    stable_swap_controller::assert_admin(sender);
     let token_a_object = object::address_to_object<Metadata>(token_a);
     let token_b_object = object::address_to_object<Metadata>(token_b);
     let token_c_object = object::address_to_object<Metadata>(token_c);
@@ -172,7 +172,7 @@ module razor_stable_swap::factory {
     sender: &signer, 
     swap_contract: address,
   ) acquires StableSwapFactory {
-    controller::assert_admin(sender);
+    stable_swap_controller::assert_admin(sender);
     let n_coins = num_coins(swap_contract);
     if (n_coins == 2) {
       let swap_object = object::address_to_object<TwoPool>(swap_contract);
@@ -262,19 +262,19 @@ module razor_stable_swap::factory {
   }
 
   public entry fun pause(account: &signer) {
-    controller::pause(account);
+    stable_swap_controller::pause(account);
   }
 
   public entry fun unpause(account: &signer) {
-    controller::unpause(account);
+    stable_swap_controller::unpause(account);
   }
 
   public entry fun set_admin(account: &signer, admin: address) {
-    controller::set_admin_address(account, admin);
+    stable_swap_controller::set_admin_address(account, admin);
   }
 
   public entry fun claim_admin(account: &signer) {
-    controller::claim_admin(account);
+    stable_swap_controller::claim_admin(account);
   }
 
   #[test_only]
