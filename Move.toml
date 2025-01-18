@@ -1,7 +1,8 @@
 [package]
-name = "razor-stable-swap"
+name = "RazorStableSwap"
 version = "1.0.0"
 authors = []
+upgrade_policy = "compatible"
 
 [addresses]
 razor_stable_swap = "_"

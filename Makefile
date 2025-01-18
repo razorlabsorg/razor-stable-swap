@@ -9,7 +9,7 @@ ARTIFACTS_LEVEL ?= none
 DEFAULT_FUND_AMOUNT ?= 100000000
 DEFAULT_FUNDER_PRIVATE_KEY ?= 0x0
 DEV_ACCOUNT ?= 0x703c20063317af987ab7fc191103d7cd27369ee1322a90d23b174ee393ca9839
-STABLE_SWAP_ADDRESS ?= 0x8ea2ce721a4979fe30217fa974ac8ac9e37bb7f9a3dd79f6198a806cd8e620f0
+STABLE_SWAP_ADDRESS ?= 0xab90d3cc6802ae9ea223ed68547bbf9a15525940b2b4f7d7e1f62ca48cc9e866
 
 # ============================= CLEAN ============================= #
 clean:
@@ -37,6 +37,7 @@ publish:
 	aptos move deploy-object \
 	--move-2 \
 	--skip-fetch-latest-git-deps \
+	--override-size-check \
 	--included-artifacts none \
 	--named-addresses "razor_stable_swap=$(DEV_ACCOUNT)" \
 	--address-name razor_stable_swap
